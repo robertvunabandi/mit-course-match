@@ -1,0 +1,3 @@
+If you are an MIT student and have declared your major, what course are you? We will not use this information in calculating the prediction, but we will use this to make our predictor more accurate. Leave black if you have not declared your major at MIT.
+# [ENSURE HAS ANSWER DURING TRAINING PHASE FOR TRAINING]
+# Have a drop-down menu with all the COURSES.

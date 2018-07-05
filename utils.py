@@ -157,7 +157,7 @@ def r_input_yn(prompt: str) -> bool:
 	""" input only yes and no """
 	return r_input(
 		prompt + ' y/n\n',
-		choices=["y", "n"],
+		choices=lambda x: x in {"y", "n"},
 		invalid_input_message="Please, answer with only 'y' for yes and 'n' for no.",
 		color=True
 	) == 'y'

@@ -37,10 +37,13 @@ class _DB:
 			question_set: List[Tuple[str, List[str]]],
 			qs_name: str = None) -> None:
 		qs_name = _DB.create_or_make_qs_name_unique(qs_name)
+		print("debug qs_name:", qs_name)
 		# create the question set
 		data = (TBL.QuestionSets, TBLCol.question_set_name, qs_name)
-		cursor.execute("INSERT INTO %s (%s) VALUES (%s)" % data)
+
+		cursor.execute("INSERT INTO %s (%s) VALUES ('%s')" % data)
 		# add the questions into the db
+		# todo - this may throw an error in case the question exists, so handle that
 		for question, choices in question_set:
 			_DB.add_question(question, choices)
 		# link the questions to the question set

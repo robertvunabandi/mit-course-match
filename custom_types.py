@@ -92,7 +92,7 @@ class SpecialString(str):
 	"""
 
 	def __new__(cls, *args, **kwargs):
-		obj = str.__new__(cls, SpecialString.string(args[0]))
+		obj = super().__new__(cls, str(args[0]))
 		return obj
 
 	def __repr__(self):
@@ -101,11 +101,13 @@ class SpecialString(str):
 	def tostring(self):
 		return str(self)
 
-	@staticmethod
-	def string(element: Any):
-		if isinstance(element, SpecialString):
-			return str(element)
-		return str(element)
+
+class SpecialInt(int):
+	""" see SpecialString: this has the same property. """
+
+	def __new__(cls, *args, **kwargs):
+		obj = super().__new__(cls, int(args[0]))
+		return obj
 
 
 """
@@ -114,11 +116,23 @@ they are just strings.
 """
 
 
+class SQSName(SpecialString):
+	pass
+
+
+class SMSName(SpecialString):
+	pass
+
+
 class SQuestion(SpecialString):
 	pass
 
 
 class SCourse(SpecialString):
+	pass
+
+
+class SChoice(SpecialString):
 	pass
 
 
@@ -130,55 +144,84 @@ class SAnswer(SpecialString):
 	pass
 
 
-if __name__ == '__main__':
-	a = SQuestion('hello')
-	print(a)
-	print(type(a))
-	print(a.tostring())
-	print(type(a.tostring()))
 """
 The following classes are IDs. Their string representation is different.
 """
 
 
-class ID(SpecialString):
+class IntID(SpecialInt):
 	def __repr__(self):
-		return 'ID::' + super(ID, self).__repr__()
+		return 'ID::' + super(IntID, self).__repr__()
 
 
-class QuestionID(ID):
+class QID(IntID):
+	def __repr__(self):
+		return 'Q' + super(QID, self).__repr__()
+
+
+class AID(IntID):
+	def __repr__(self):
+		return 'A' + super(AID, self).__repr__()
+
+
+class QSID(IntID):
+	def __repr__(self):
+		return 'QS' + super(QSID, self).__repr__()
+
+
+class RID(IntID):
+	def __repr__(self):
+		return 'R' + super(RID, self).__repr__()
+
+
+if __name__ == '__main__':
+	a = IntID(5)
+	b = QID(a)
+	print(a, repr(a), b, repr(b))
+
+
+class MSID(IntID):
+	def __repr__(self):
+		return 'MS' + super(MSID, self).__repr__()
+
+
+class StringID(SpecialString):
+	def __repr__(self):
+		return 'ID::' + super(StringID, self).__repr__()
+
+
+class QuestionID(StringID):
 
 	def __repr__(self):
 		return 'Question' + super(QuestionID, self).__repr__()
 
 
-class QuestionSetID(ID):
+class QuestionSetID(StringID):
 	def __repr__(self):
 		return 'QuestionSet' + super(QuestionSetID, self).__repr__()
 
 
-class MappingSetID(ID):
+class MappingSetID(StringID):
 	def __repr__(self):
 		return 'MappingSet' + super(MappingSetID, self).__repr__()
 
 
-class AnswerSetID(ID):
+class AnswerSetID(StringID):
 	def __repr__(self):
 		return 'AnswerSet' + super(AnswerSetID, self).__repr__()
 
 
 if __name__ == '__main__':
 	a = 'hello'
-	b = ID(a)
+	b = StringID(a)
 	c = QuestionID(a)
 	d = MappingSetID(a)
 	e = AnswerSetID(a)
 	f = QuestionID(e)
-	g = AnswerSetID(ID(QuestionID(MappingSetID(c))))
+	g = AnswerSetID(StringID(QuestionID(MappingSetID(c))))
 	h = SCourse(SCourse('f'))
 	LIST = [a, b, c, d, e, f, g, h, 'f']
 	SET = {a, b, c, d, e, f, g, h}
 	for a in LIST:
 		print(a, repr(a), a in SET)
-
-	print(isinstance(e, ID))
+	print(isinstance(e, StringID))

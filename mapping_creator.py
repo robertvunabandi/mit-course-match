@@ -1,6 +1,122 @@
-from typing import List
 import utils
 import os
+import database
+from typing import List, Tuple, Dict
+from custom_types import SQuestion, SChoice, QID, AID, QSID
+
+
+class QuestionAnswersToVectorMap:
+	"""
+	for a given question, map each of its choices to a vector and ensure
+	all the vectors have the same dimensions.
+	"""
+
+	def __init__(
+			self,
+			qid: QID,
+			answers: List[Tuple[AID, SChoice]],
+			dimension: int = 1) -> None:
+		utils.assert_valid_db_id(qid, 'question_id')
+		QuestionAnswersToVectorMap.assert_valid_answer_input(answers)
+		QuestionAnswersToVectorMap.assert_valid_dimension(dimension)
+		self.qid = qid
+		self.dimension = dimension
+		self.answer_set = set(answer for _, answer in answers)
+		self.answer_id_to_answer_map = {aid: answer for aid, answer in answers}
+		self.map = {aid: None for aid in self.answer_id_to_answer_map}
+
+	def is_fully_mapped(self) -> bool:
+		return any([self.map[answer] is None for answer in self.map])
+
+	def map(self, answer: str, vector: List[int]) -> None:
+		assert answer in self.answer_set, 'the answer must be in the map'
+		QuestionAnswersToVectorMap.assert_valid_vector(vector, self.dimension)
+		aid = self.answer_id_to_answer_map[answer]
+		self.map[aid] = vector
+
+	def reset_dimension(self, dimension: int) -> None:
+		QuestionAnswersToVectorMap.assert_valid_dimension(dimension)
+		if self.dimension == dimension: return
+		self.dimension = dimension
+		self.map = {aid: None for aid in self.answer_id_to_answer_map}
+
+	@staticmethod
+	def assert_valid_answer_input(answers: List[Tuple[AID, SChoice]]):
+		"""
+		this must be a list of tuple of integers (aid) and strings (choice)
+		"""
+		assert type(answers) == list, 'choices must be a list'
+		for el in answers:
+			fail_str = 'Failing at -> %s' % str(el)
+			assert type(el) == tuple, \
+				'each element in choices must be a tuple. %s' % fail_str
+			assert len(el) == 2, \
+				'each element must contain 2 element: ' \
+				'(aid, choice). %s' % fail_str
+			aid, choice = el
+			assert type(aid) == int, \
+				'the aid must be an integer. %s' % fail_str
+			assert type(choice) == str, \
+				'choice must be a string. %s' % fail_str
+
+	@staticmethod
+	def assert_valid_dimension(dimension: int) -> None:
+		assert type(dimension) == int, 'dimension must be an integer'
+
+	@staticmethod
+	def assert_valid_vector(vector: List[int], dimension: int) -> None:
+		assert type(vector) == list, 'vector must be a list'
+		for el in vector:
+			assert type(el) == int, \
+				'vector must be a list of integers. failing at -> %s' % str(el)
+		assert len(vector) == dimension, 'vector must match the dimension'
+
+	def get_writable(self) -> str:
+		# todo
+		pass
+
+
+class MappingSetCreator:
+	"""
+	class to create mappings for question sets that are already created.
+	essentially, for each question in the question set, we map each of the
+	choices to that questions to its own specific vector, which will
+	eventually be used in the classifier.
+	"""
+
+	def __init__(self, qsid: int, ms_name: str = None):
+		self.qsid = QSID(qsid)
+		self.name = ms_name
+		self.question_map, self._resolver_map, self.qid_to_question_map = \
+			MappingSetCreator.parse_qs(database.load_question_set(qsid))
+
+	@staticmethod
+	def parse_qs(
+			qs: List[Tuple[QID, SQuestion, List[Tuple[AID, SChoice]]]]
+	) -> Tuple[
+		Dict[QID, QuestionAnswersToVectorMap],
+		Dict[QID or SQuestion, QID],
+		Dict[QID, SQuestion]
+	]:
+		question_map, resolver_map, qid_to_question_map = {}, {}, {}
+		for qid, question, answers in qs:
+			resolver_map[qid] = qid
+			resolver_map[question] = qid
+			qid_to_question_map[qid] = question
+			# creator is expected to reset the dimension and populate mapping
+			question_map[qid] = QuestionAnswersToVectorMap(qid, answers)
+		return question_map, resolver_map, qid_to_question_map
+
+	def __getitem__(self, item):
+		return self.question_map[self._resolver_map[item]]
+
+	def __iter__(self):
+		for qid in self.question_map:
+			yield qid, self.qid_to_question_map[qid]
+
+	def get_writable(self) -> str:
+		# todo
+		pass
 
 
 class QuestionToVectorAnswersMap:
@@ -8,7 +124,7 @@ class QuestionToVectorAnswersMap:
 	Allow to create a mapping for a given question
 	A QMapping contains:
 	- question_id
-	- answers
+	- choices
 	- dimensions
 	- map
 
@@ -17,7 +133,6 @@ class QuestionToVectorAnswersMap:
 	given when calling the __init__ method. Eventually, there
 	will be a way to generate a string that can be stored into
 	the text format.
-	todo - we should use JSON instead. it might be better
 	"""
 
 	def __init__(
@@ -29,12 +144,12 @@ class QuestionToVectorAnswersMap:
 		map the question id to a set of vector as response. we
 		detach the Mapping object from knowing what the true
 		of the question is.
-		:param answer_count: the number of answers for this question
+		:param answer_count: the number of choices for this question
 		:param question_id: the id of the question
 		:param dimension: how many dimension the vector for each answer will be
 		"""
-		assert isinstance(question_id, str), 'question_id must be a string'
-		assert type(answers) == list, 'answers must be a list'
+		assert isinstance(question_id, int), 'question_id must be a string'
+		assert type(answers) == list, 'choices must be a list'
 		assert type(dimension) == int, 'dimension must be an integer'
 		self.question_id = question_id
 		self.answers = answers
@@ -70,7 +185,7 @@ class QuestionToVectorAnswersMap:
 
 class QuestionSetMapper:
 	"""
-	mapping question_ids to questions and vector answers
+	mapping question_ids to questions and vector choices
 
 	this is simply to convert the questions that we read
 	from the question file into a format that can be easily
@@ -86,10 +201,10 @@ class QuestionSetMapper:
 	def create_map_for_question(self, row: List[str]) -> None:
 		assert len(row) == 3, 'each question must have 3 components'
 		id, question, answers = row
-		self.map[id] = {'question': question, 'answers': answers.split(',')}
+		self.map[id] = {'question': question, 'choices': answers.split(',')}
 
 	def get_mapped_question_and_answer(self, question_id: str):
-		return self.map[question_id]['question'], self.map[question_id]['answers']
+		return self.map[question_id]['question'], self.map[question_id]['choices']
 
 	def __iter__(self):
 		for question_id in self.map:
@@ -146,11 +261,11 @@ class QuestionSetMapCreator:
 		# once done with setting the mappings for all questions, we ensure
 		# the user is able to see everything one more time and then confirm
 		if utils.r_input_yn(
-			'would you like to see the mappings before saving?'
+				'would you like to see the mappings before saving?'
 		):
 			utils.log_notice(msc.get_writable())
 		if utils.r_input_yn(
-			'do you want to store this set of mapping?'
+				'do you want to store this set of mapping?'
 		):
 			msc.store_into_data_format()
 		utils.log_prompt('you are done!')
@@ -177,10 +292,10 @@ class QuestionSetMapCreator:
 		"""
 		utils.log_prompt('The current question is:')
 		utils.log_notice(utils.Color.yellow(question))
-		utils.log_prompt('and the current set of answers are ')
+		utils.log_prompt('and the current set of choices are ')
 		utils.log_notice(str(answers))
 		if utils.r_input_yn(
-			'would you like to use a one-hot encoding here?'
+				'would you like to use a one-hot encoding here?'
 		):
 			dimension = len(answers)
 			qmap = QuestionToVectorAnswersMap(question_id, answers, dimension)
@@ -264,7 +379,6 @@ class QuestionSetMapCreator:
 			self.mappings[question_id].get_writable()
 			for question_id in self.questions_mapper
 		])
-
 
 
 if __name__ == '__main__':

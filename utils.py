@@ -23,8 +23,10 @@ def _generate_id(alphabet: List[str], length: int) -> str:
 def generate_question_set_name() -> str:
 	return _generate_id(ALPHANUMERIC_ALPHABET, 12)
 
+
 def generate_question_set_extension() -> str:
 	return _generate_id(ALPHANUMERIC_ALPHABET, 4)
+
 
 def generate_question_set_id() -> str:
 	return _generate_id(DIGITS_ALPHABET, 3)
@@ -36,6 +38,7 @@ def generate_question_id() -> str:
 
 def generate_mapping_id() -> str:
 	return _generate_id(DIGITS_ALPHABET, 5)
+
 
 def generate_data_id() -> str:
 	"""
@@ -222,7 +225,8 @@ def create_asserter_to_boolean(
 
 	return func
 
-def clean_string(string: str):
+
+def clean_string(string: str) -> str:
 	"""
 	remove white spaces at beginning and end
 	"""
@@ -233,3 +237,8 @@ def clean_string(string: str):
 	if string[-1] == ' ':
 		return clean_string(string[:-1])
 	return string
+
+
+def assert_valid_db_id(id: int, idtype: str = None) -> None:
+	idtype = 'id' if idtype is None else str(idtype)
+	assert type(id) == int, '%s must be an integer' % idtype

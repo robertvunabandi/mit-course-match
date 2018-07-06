@@ -133,7 +133,7 @@ class Classifier:
 	def predict(self, answer_vector: RowVector, verbose: int = 0) -> RowVector:
 		"""
 		outputs a dictionary that maps the probabilities of each major
-		based on these answers
+		based on these choices
 		:param answer_vector:
 			a numpy column vector
 		:param course:

@@ -36,7 +36,7 @@ class QuestionManager:
 				self.order.append(question_id)
 				self.map[question_id] = {
 					'question': question,
-					'answers': [
+					'choices': [
 						utils.clean_string(answer)
 						for answer in answers.split(',')
 					]
@@ -47,14 +47,14 @@ class QuestionManager:
 		return self.map[question_id]['question']
 
 	def question_answer_index(self, question_id: QuestionID, answer: SAnswer) -> int:
-		return self.map[question_id]['answers'].index(utils.clean_string(answer))
+		return self.map[question_id]['choices'].index(utils.clean_string(answer))
 
 	def __iter__(self):
 		for question_id in self.order:
 			yield question_id
 
 	def question_answers_for_question_id(self, question_id: QuestionID) -> SAnswer:
-		return self.map[question_id]['answers']
+		return self.map[question_id]['choices']
 
 
 class AnswerManager:

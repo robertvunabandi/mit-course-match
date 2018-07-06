@@ -1,7 +1,8 @@
+import utils
 from sql.sql import cursor, cnx
 from sql.sql_constants import TBL, TBLCol
 from typing import List, Callable, Tuple, Set
-import utils
+from custom_types import SChoice, SQuestion, QID, AID
 
 
 # todo - add ways to prevent sql injections
@@ -168,8 +169,39 @@ class _DB:
 		return [row[0] for row in cursor.fetchall()]
 
 	@staticmethod
-	def load_question_set(qsid: int) -> List[str]:
-		pass
+	def load_question_set(
+			qsid: int) -> List[Tuple[QID, SQuestion, List[Tuple[AID, SChoice]]]]:
+		data = (
+			TBLCol.question_id,
+			TBL.QuestionMappings,
+			TBLCol.question_set_id,
+			qsid,
+		)
+		cursor.execute("SELECT %s FROM %s WHERE %s = %s" % data)
+		question_id_list = [row[0] for row in cursor.fetchall()]
+		question_set_result = []
+		for qid in question_id_list:
+			data = (
+				TBLCol.answer_id, TBLCol.choice, TBLCol.question,
+				TBL.AnswerChoices, TBL.Questions,
+				TBLCol.question_id, TBLCol.question_id,
+				TBLCol.question_id, qid),
+			cursor.execute("""
+				SELECT a.%s, a.%s, b.%s 
+				FROM %s a LEFT JOIN %s b 
+				ON a.%s = b.%s 
+				WHERE a.%s = %s
+				""" % data)
+			rows = cursor.fetchall()
+			question = SQuestion(rows[0][2])
+			question_set_result.append(
+				(
+					QID(qid),
+					question,
+					[(AID(aid), SChoice(choice)) for aid, choice, _ in rows],
+				)
+			)
+		return question_set_result
 
 
 if __name__ == '__main__':
@@ -191,9 +223,10 @@ if __name__ == '__main__':
 # get the number of labelled responses
 # get the number of responses in the db
 # get all responses from a given question set
-# get all the answers to a given question or data about it
+# get all the choices to a given question or data about it
 # deleting methods: question, question_set, answer_mapping, responses
 # todo - add a response token, which the owner can use to delete their response
 
 # Exposing functions that will be used publicly
 store_question_set = _DB.store_question_set
+load_question_set = _DB.load_question_set

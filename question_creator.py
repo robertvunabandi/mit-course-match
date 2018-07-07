@@ -72,6 +72,9 @@ class QuestionSetCreator:
 	"""
 
 	def __init__(self, name: str = None) -> None:
+		if name is not None:
+			assert type(name) == str, 'name must be a string'
+			name = None if len(name) == 0 else name
 		self.name = name
 		self.questions = []
 		self.last_question_added = None
@@ -86,12 +89,11 @@ class QuestionSetCreator:
 
 	def tolist(self) -> List[Tuple[SQuestion, List[SChoice]]]:
 		return [
-			(question.question, list(question.answers))
+			(question.question, list(question.choices))
 			for question in self.questions
 		]
 
 	def store(self) -> None:
-		print(self.tolist())
 		database.store_question_set(self.tolist(), self.name)
 
 	def get_writable(self, ensure_count: bool = False) -> str:

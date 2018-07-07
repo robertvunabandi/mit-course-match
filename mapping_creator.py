@@ -14,12 +14,14 @@ class QuestionAnswersToVectorMap:
 	def __init__(
 			self,
 			qid: QID,
+			question: SQuestion,
 			answers: List[Tuple[AID, SChoice]],
 			dimension: int = 1) -> None:
 		utils.assert_valid_db_id(qid, 'question_id')
 		QuestionAnswersToVectorMap.assert_valid_answer_input(answers)
 		QuestionAnswersToVectorMap.assert_valid_dimension(dimension)
 		self.qid = qid
+		self.question = question
 		self.dimension = dimension
 		self.answer_set = set(answer for _, answer in answers)
 		self.answer_id_to_answer_map = {aid: answer for aid, answer in answers}
@@ -54,9 +56,9 @@ class QuestionAnswersToVectorMap:
 				'each element must contain 2 element: ' \
 				'(aid, choice). %s' % fail_str
 			aid, choice = el
-			assert type(aid) == int, \
+			assert isinstance(aid, int), \
 				'the aid must be an integer. %s' % fail_str
-			assert type(choice) == str, \
+			assert isinstance(choice, str), \
 				'choice must be a string. %s' % fail_str
 
 	@staticmethod
@@ -72,8 +74,19 @@ class QuestionAnswersToVectorMap:
 		assert len(vector) == dimension, 'vector must match the dimension'
 
 	def get_writable(self) -> str:
-		# todo
-		pass
+		return '\n'.join([
+			repr(self.qid) + ' (' + self.question + ')',
+			'\n'.join([
+				''.join([
+					repr(aid),
+					' (',
+					str(self.answer_id_to_answer_map[aid]),
+					')',
+					' -> ',
+					str(self.map[aid])
+				]) for aid in self.map
+			]),
+		])
 
 
 class MappingSetCreator:
@@ -104,7 +117,7 @@ class MappingSetCreator:
 			resolver_map[question] = qid
 			qid_to_question_map[qid] = question
 			# creator is expected to reset the dimension and populate mapping
-			question_map[qid] = QuestionAnswersToVectorMap(qid, answers)
+			question_map[qid] = QuestionAnswersToVectorMap(qid, question, answers)
 		return question_map, resolver_map, qid_to_question_map
 
 	def __getitem__(self, item):
@@ -115,8 +128,14 @@ class MappingSetCreator:
 			yield qid, self.qid_to_question_map[qid]
 
 	def get_writable(self) -> str:
-		# todo
-		pass
+		return '\n---\n'.join([
+			self.question_map[qid].get_writable() for qid in self.question_map
+		])
+
+
+if __name__ == '__main__':
+	a = MappingSetCreator(3)
+	print(a.get_writable())
 
 
 class QuestionToVectorAnswersMap:
@@ -380,6 +399,5 @@ class QuestionSetMapCreator:
 			for question_id in self.questions_mapper
 		])
 
-
-if __name__ == '__main__':
-	QuestionSetMapCreator.start_interactive_mapping_set_creation()
+# if __name__ == '__main__':
+# 	QuestionSetMapCreator.start_interactive_mapping_set_creation()

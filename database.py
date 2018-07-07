@@ -38,7 +38,6 @@ class _DB:
 			question_set: List[Tuple[str, List[str]]],
 			qs_name: str = None) -> None:
 		qs_name = _DB.create_or_make_qs_name_unique(qs_name)
-		print("debug qs_name:", qs_name)
 		# create the question set
 		data = (TBL.QuestionSets, TBLCol.question_set_name, qs_name)
 
@@ -68,12 +67,12 @@ class _DB:
 		:return: updated qs_name such that it's unique
 		"""
 		qs_name_set = _DB.get_all_question_set_names()
-		if qs_name is None:
+		if qs_name is None or len(qs_name) == 0:
 			return utils.generate_unique_id(
 				qs_name_set, utils.generate_question_set_name
 			)
 		qs_extension = ""
-		while qs_name + qs_extension in qs_name_set:
+		while qs_name + qs_extension in qs_name_set or len(qs_name) < 4:
 			qs_extension = '-' + utils.generate_question_set_extension()
 		return qs_name + qs_extension
 
@@ -185,7 +184,8 @@ class _DB:
 				TBLCol.answer_id, TBLCol.choice, TBLCol.question,
 				TBL.AnswerChoices, TBL.Questions,
 				TBLCol.question_id, TBLCol.question_id,
-				TBLCol.question_id, qid),
+				TBLCol.question_id, qid
+			)
 			cursor.execute("""
 				SELECT a.%s, a.%s, b.%s 
 				FROM %s a LEFT JOIN %s b 

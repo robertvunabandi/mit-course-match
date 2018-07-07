@@ -241,4 +241,5 @@ def clean_string(string: str) -> str:
 
 def assert_valid_db_id(id: int, idtype: str = None) -> None:
 	idtype = 'id' if idtype is None else str(idtype)
-	assert type(id) == int, '%s must be an integer' % idtype
+	assert isinstance(id, int), \
+		'%s must be an instance of integer got -> %s' % (idtype, id)

@@ -201,9 +201,7 @@ class MappingSetCreator:
 		])
 
 	def store(self):
-		# todo - finish up implementation in db
 		database.store_mapping_set(self.tolist(), self.qsid, self.name)
-		raise NotImplementedError('GOT EM.')
 
 	def tolist(self) -> List[Tuple[QID, SQuestion, List[Tuple[AID, List[int]]]]]:
 		return [
@@ -249,20 +247,18 @@ def start_interactive_mapping_set_creation():
 		))
 		msc.reset_dimension_for_question(qid, dimension)
 		example = ','.join(['0' for _ in range(dimension)])
-		should_remap = True
-		while should_remap:
+		should_map_choices = True
+		while should_map_choices:
 			for aid, choice in choice_list:
 				vector = utils.r_input(
 					"Enter a vector in csv format for the choice '%s'. Make "
-					"sure that you have the dimensions %s. For example, you "
-					"may enter '%s': " % (choice, str(dimension), example)
+					"sure that you have the dimensions %s. You may enter "
+					"'%s' for example: " % (choice, str(dimension), example)
 				)
 				msc[(qid, aid)] = [int(el) for el in vector.split(',')]
-			utils.log_prompt(
-				"here is a summary of the mappings you just did.\n-\n%s\n-\n "
-				"Would you like to redo it?" % msc[qid].get_writable()
-			)
-			should_remap = utils.r_input_yn('Please answer.')
+			utils.log_prompt("here is a summary of the mappings you just did.")
+			utils.log_notice("-\n%s\n-" % msc[qid].get_writable())
+			should_map_choices = utils.r_input_yn('"Would you like to redo it?')
 		utils.log_prompt('moving on...')
 	if utils.r_input_yn('would you like to review all mappings?'):
 		utils.log_notice(msc.get_writable())

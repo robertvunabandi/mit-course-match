@@ -48,8 +48,32 @@ class _DB:
 			ms_name
 		)
 		cursor.execute("INSERT INTO %s (%s, %s) VALUES (%s, '%s')" % data)
-		# todo - continue this from here
-		raise NotImplementedError
+		# insert all the mappings into the db
+		msid = _DB.mapping_set_id(ms_name)
+		additional_values = []
+		for qid, question, answer_tup in mapping_set:
+			for aid, vector in answer_tup:
+				additional_values.append(''.join([
+					'(',
+					str(msid),
+					", ",
+					str(qsid),
+					", ",
+					str(aid),
+					", '",
+					','.join(str(el) for el in vector),
+					"')",
+				]))
+		data = (
+			TBL.AnswerMappings,
+			TBLCol.mapping_set_id,
+			TBLCol.question_set_id,
+			TBLCol.answer_id,
+			TBLCol.vector,
+			', '.join(additional_values)
+		)
+		print(data)
+		cursor.execute("INSERT INTO %s (%s, %s, %s, %s) VALUES %s" % data)
 
 	@staticmethod
 	@_commit
@@ -62,6 +86,7 @@ class _DB:
 		cursor.execute("INSERT INTO %s (%s) VALUES ('%s')" % data)
 		# add the questions into the db
 		# todo - this may throw an error in case the question exists, so handle that
+		# maybe we should return to the user the questions that failed...?
 		for question, choices in question_set:
 			_DB.add_question(question, choices)
 		# link the questions to the question set
@@ -78,23 +103,28 @@ class _DB:
 		cursor.execute("INSERT INTO %s (%s, %s) VALUES %s;" % data)
 
 	@staticmethod
-	def create_or_make_ms_name_unique(ms_name: str = None) -> str:
-		return _DB.create_or_make_name_unique(
-			ms_name,
-			_DB.get_all_mapping_set_names(),
-			utils.generate_mapping_set_name,
-			utils.generate_mapping_set_extension,
-			minimum_name_length=4)
+	@_commit
+	def add_question(question: str, choices: List[str]) -> None:
+		if _DB.question_exists_in_db(question):
+			raise ValueError('this question already exists in the database')
+		data = (TBL.Questions, TBLCol.question, question)
+		cursor.execute("INSERT INTO %s (%s) VALUES ('%s')" % data)
 
+		question_id = _DB.question_id(question)
+		data = (
+			TBL.AnswerChoices,
+			TBLCol.question_id,
+			TBLCol.choice,
+			', '.join([
+				"(" + str(question_id) + ", '" + str(choice) + "')"
+				for choice in choices
+			])
+		)
+		cursor.execute("INSERT INTO %s (%s, %s) VALUES %s;" % data)
 
 	@staticmethod
-	def create_or_make_qs_name_unique(qs_name: str = None) -> str:
-		return _DB.create_or_make_name_unique(
-			qs_name,
-			_DB.get_all_question_set_names(),
-			utils.generate_question_set_name,
-			utils.generate_question_set_extension,
-			minimum_name_length=4)
+	def question_exists_in_db(question: str) -> bool:
+		return _DB.question_id(question) is not None
 
 	@staticmethod
 	def get_all_mapping_set_names() -> Set[str]:
@@ -107,6 +137,24 @@ class _DB:
 		data = (TBLCol.question_set_name, TBL.QuestionSets)
 		cursor.execute('SELECT %s FROM %s' % data)
 		return set(el[0] for el in cursor.fetchall())
+
+	@staticmethod
+	def create_or_make_ms_name_unique(ms_name: str = None) -> str:
+		return _DB.create_or_make_name_unique(
+			ms_name,
+			_DB.get_all_mapping_set_names(),
+			utils.generate_mapping_set_name,
+			utils.generate_mapping_set_extension,
+			minimum_name_length=4)
+
+	@staticmethod
+	def create_or_make_qs_name_unique(qs_name: str = None) -> str:
+		return _DB.create_or_make_name_unique(
+			qs_name,
+			_DB.get_all_question_set_names(),
+			utils.generate_question_set_name,
+			utils.generate_question_set_extension,
+			minimum_name_length=4)
 
 	@staticmethod
 	def create_or_make_name_unique(
@@ -135,6 +183,8 @@ class _DB:
 			name_extension = '-' + name_extension_generation_func()
 		return name + name_extension
 
+	# Id and name getters
+
 	@staticmethod
 	def question_set_id(qs_name: str) -> int or None:
 		return _DB.get_unique_field(
@@ -151,6 +201,24 @@ class _DB:
 			id_col_name=TBLCol.question_set_name,
 			target_col_name=TBLCol.question_set_id,
 			target_value=str(qsid)
+		)
+
+	@staticmethod
+	def mapping_set_id(ms_name: str) -> int or None:
+		return _DB.get_unique_field(
+			tbl=TBL.MappingSets,
+			id_col_name=TBLCol.mapping_set_id,
+			target_col_name=TBLCol.mapping_set_name,
+			target_value="'" + ms_name + "'"
+		)
+
+	@staticmethod
+	def mapping_set_name(msid: int) -> str or None:
+		return _DB.get_unique_field(
+			tbl=TBL.MappingSets,
+			id_col_name=TBLCol.mapping_set_name,
+			target_col_name=TBLCol.mapping_set_id,
+			target_value=str(msid)
 		)
 
 	@staticmethod
@@ -187,47 +255,27 @@ class _DB:
 			return None
 		return row[0][0]
 
-	@staticmethod
-	@_commit
-	def add_question(question: str, choices: List[str]) -> None:
-		if _DB.question_exists_in_db(question):
-			raise ValueError('this question already exists in the database')
-		data = (TBL.Questions, TBLCol.question, question)
-		cursor.execute("INSERT INTO %s (%s) VALUES ('%s')" % data)
 
-		question_id = _DB.question_id(question)
-		data = (
-			TBL.AnswerChoices,
-			TBLCol.question_id,
-			TBLCol.choice,
-			', '.join([
-				"(" + str(question_id) + ", '" + str(choice) + "')"
-				for choice in choices
-			])
-		)
-		cursor.execute("INSERT INTO %s (%s, %s) VALUES %s;" % data)
 
 	@staticmethod
-	def question_exists_in_db(question: str) -> bool:
-		return _DB.question_id(question) is not None
-
-	@staticmethod
-	def answer_choices_for_question(question: str) -> List[str]:
+	def answer_choices_for_question(question: str) -> List[Tuple[int, str]]:
 		question_id = _DB.question_id(question)
 		if question_id is None:
 			raise ValueError('the question given does not exists')
 		return _DB.answer_choices_for_question_id(question_id)
 
 	@staticmethod
-	def answer_choices_for_question_id(question_id: int) -> List[str]:
+	def answer_choices_for_question_id(
+			question_id: int) -> List[Tuple[int, str]]:
 		data = (
+			TBLCol.answer_id,
 			TBLCol.choice,
 			TBL.AnswerChoices,
 			TBLCol.question_id,
 			question_id
 		)
-		cursor.execute("SELECT %s FROM %s WHERE %s = '%s'" % data)
-		return [row[0] for row in cursor.fetchall()]
+		cursor.execute("SELECT %s, %s FROM %s WHERE %s = '%s'" % data)
+		return [(aid, choice) for aid, choice in cursor.fetchall()]
 
 	@staticmethod
 	def load_question_set(
@@ -281,8 +329,6 @@ if __name__ == '__main__':
 # todo - need to learn about cascade deletes and alter tables to allow it then implement it
 # this may be unsustainable to build before moving on. These methods should be built as needed!
 # todo - Methods to build:
-# method to store a question set
-# method to store a question set mapping
 # get a list of courses
 # get stored responses from the db, add count parameter
 # questions from a question set by qsid or qs_name

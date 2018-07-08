@@ -190,10 +190,9 @@ class RID(IntID):
 		return 'R' + super(RID, self).__repr__()
 
 
-if __name__ == '__main__':
-	a = IntID(5)
-	b = QID(a)
-	print(a, repr(a), b, repr(b))
+class CID(IntID):
+	def __repr__(self):
+		return 'C' + super(CID, self).__repr__()
 
 
 class MSID(IntID):
@@ -226,18 +225,3 @@ class AnswerSetID(StringID):
 	def __repr__(self):
 		return 'AnswerSet' + super(AnswerSetID, self).__repr__()
 
-
-if __name__ == '__main__':
-	a = 'hello'
-	b = StringID(a)
-	c = QuestionID(a)
-	d = MappingSetID(a)
-	e = AnswerSetID(a)
-	f = QuestionID(e)
-	g = AnswerSetID(StringID(QuestionID(MappingSetID(c))))
-	h = SCourse(SCourse('f'))
-	LIST = [a, b, c, d, e, f, g, h, 'f']
-	SET = {a, b, c, d, e, f, g, h}
-	for a in LIST:
-		print(a, repr(a), a in SET)
-	print(isinstance(e, StringID))

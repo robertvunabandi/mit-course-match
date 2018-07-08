@@ -30,6 +30,7 @@ class TBLCol:
 	course_name = 'course_name'
 	response_id = 'rid'
 	time_created = 'time_created'
+	course_id = 'cid'
 
 
 class TableColumns:
@@ -78,7 +79,7 @@ class AnswerMappings(TableColumns):
 
 class Courses(TableColumns):
 	def get_columns(self):
-		return (TBLCol.course_number, TBLCol.course_name)
+		return (TBLCol.course_number, TBLCol.course_name, TBLCol.course_id)
 
 
 class Responses(TableColumns):

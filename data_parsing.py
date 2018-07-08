@@ -2,9 +2,11 @@ import os
 import utils
 import numpy as np
 from typing import Tuple, List, Dict
+import database
 from custom_types import \
 	Vector, RowVector, QuestionID, AnswerSetID, QuestionSetID, MappingSetID, \
-	SAnswer, SCourseNumber, SCourse
+	SAnswer, SCourseNumber, SCourse, \
+	QID, AID, CID, RID, QSID, MSID, SQuestion, SChoice
 
 
 class QuestionManager:
@@ -115,6 +117,94 @@ class AnswerManager:
 		for question_id in self.order:
 			yield question_id
 
+
+# ------------------------------------------------------------
+# ------------------------------------------------------------
+
+class CourseObj:
+	def __init__(self) -> None:
+		self.cid_to_course: Dict[CID, Tuple[SCourseNumber, SCourse]] = None
+		self.cid_resolver: Dict[CID or SCourse or SCourseNumber, CID] = None
+		self.cid_to_vector: Dict[CID, np.ndarray] = {}
+		self.course_count: int = None
+		self.setup()
+
+	def setup(self) -> None:
+		cid_to_course, cid_resolver, course_count = {}, {}, 0
+		for cn, course_name, cid in database.load_courses():
+			cid_to_course[CID(cid)] = (SCourseNumber(cn), SCourse(course_name))
+			cid_resolver[CID(cid)] = CID(cid)
+			cid_resolver[SCourse(course_name)] = CID(cid)
+			cid_resolver[SCourseNumber(cn)] = cid
+			course_count += 1
+		self.cid_to_course, self.cid_resolver = cid_to_course, cid_resolver
+		self.course_count = course_count
+
+	def get_course_vector(
+			self,
+			course_identifier: CID or SCourse or SCourseNumber) -> np.ndarray:
+		cid = self.cid_resolver[course_identifier]
+		if cid in self.cid_to_vector:
+			return self.cid_to_vector[cid]
+		self.cid_to_vector[cid] = Vector.one_hot_repr(self.course_count, cid)
+		return self.get_course_vector(cid)
+
+
+if __name__ == '__main__':
+	a = CourseObj()
+
+
+class DataParser:
+	def __init__(self, qsid: QSID, msid: MSID) -> None:
+		utils.assert_valid_db_id(qsid, QSID.__name__)
+		utils.assert_valid_db_id(msid, MSID.__name__)
+		self.qsid, self.msid = qsid, msid
+		self.base_answer_vector: np.ndarray = None
+		self.answer_vector: np.ndarray = None
+		self.course_obj: CourseObj = None
+		self.setup()
+
+	def setup(self) -> None:
+		self.course_obj = CourseObj()
+		raise NotImplementedError
+
+	def input_dimension(self) -> int:
+		raise NotImplementedError
+
+	def output_dimension(self) -> int:
+		return self.course_obj.course_count
+
+	def set_answer(
+			self,
+			question_identifier: SQuestion or QID,
+			answer_identifier: SChoice or AID) -> None:
+		raise NotImplementedError
+
+	def store_responses(self, course: SCourse or CID) -> None:
+		raise NotImplementedError
+
+	def refresh_responses(self) -> None:
+		raise NotImplementedError
+
+	def load_training_data(
+			self,
+			rid: RID
+	) -> Tuple[CID, Dict[Tuple[QID, SQuestion], Tuple[AID, SChoice]]]:
+		"""
+		loads the course id for the training data response and a dictionary
+		mapping (qid, question) to (aid, choice) for that response.
+		for v1, we expect the rid to have qsid and msid of this instance of
+		data parser.
+		:param rid: response id
+		"""
+		raise NotImplementedError
+
+	def __iter__(self) -> QID:
+		raise NotImplementedError
+
+
+# ------------------------------------------------------------
+# ------------------------------------------------------------
 
 class DataParser:
 	"""
@@ -319,7 +409,7 @@ class DataParser:
 		return sorted(course_ranking, key=lambda tup: -tup[2])
 
 
-if __name__ == '__main__':
+if __name__ == '__main__' and False:
 	dp = DataParser(QuestionSetID('314'), MappingSetID('35780'))
 	# d = dp.load_training_data()
 	# print(dp.course_vector(SCourse('Biology')))

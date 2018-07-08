@@ -189,7 +189,7 @@ class _DB:
 	def question_set_id(qs_name: str) -> int or None:
 		return _DB.get_unique_field(
 			tbl=TBL.QuestionSets,
-			id_col_name=TBLCol.question_set_id,
+			unique_col_name=TBLCol.question_set_id,
 			target_col_name=TBLCol.question_set_name,
 			target_value="'" + qs_name + "'"
 		)
@@ -198,7 +198,7 @@ class _DB:
 	def question_set_name(qsid: int) -> str or None:
 		return _DB.get_unique_field(
 			tbl=TBL.QuestionSets,
-			id_col_name=TBLCol.question_set_name,
+			unique_col_name=TBLCol.question_set_name,
 			target_col_name=TBLCol.question_set_id,
 			target_value=str(qsid)
 		)
@@ -207,7 +207,7 @@ class _DB:
 	def mapping_set_id(ms_name: str) -> int or None:
 		return _DB.get_unique_field(
 			tbl=TBL.MappingSets,
-			id_col_name=TBLCol.mapping_set_id,
+			unique_col_name=TBLCol.mapping_set_id,
 			target_col_name=TBLCol.mapping_set_name,
 			target_value="'" + ms_name + "'"
 		)
@@ -216,7 +216,7 @@ class _DB:
 	def mapping_set_name(msid: int) -> str or None:
 		return _DB.get_unique_field(
 			tbl=TBL.MappingSets,
-			id_col_name=TBLCol.mapping_set_name,
+			unique_col_name=TBLCol.mapping_set_name,
 			target_col_name=TBLCol.mapping_set_id,
 			target_value=str(msid)
 		)
@@ -225,7 +225,7 @@ class _DB:
 	def question_id(question: str) -> int or None:
 		return _DB.get_unique_field(
 			tbl=TBL.Questions,
-			id_col_name=TBLCol.question_id,
+			unique_col_name=TBLCol.question_id,
 			target_col_name=TBLCol.question,
 			target_value="'" + question + "'"
 		)
@@ -233,7 +233,7 @@ class _DB:
 	@staticmethod
 	def get_unique_field(
 			tbl: str,
-			id_col_name: str,
+			unique_col_name: str,
 			target_col_name: str,
 			target_value: str) -> int or None:
 		"""
@@ -241,21 +241,19 @@ class _DB:
 		values such that the id_col_name column only has one id that can match
 		the given target_value. Given that, this returns that unique id.
 		:param tbl: table where this is coming from
-		:param id_col_name: the column name of the id
+		:param unique_col_name: the column name of the id
 		:param target_col_name: the target column name
 		:param target_value: the target column value
 		:return:
-			integer id from the database for the row with the unique
+			unique_col_name from the database for the row with the unique
 			target_col_name equal to the target value
 		"""
-		data = (id_col_name, tbl, target_col_name, target_value)
+		data = (unique_col_name, tbl, target_col_name, target_value)
 		cursor.execute("SELECT %s FROM %s WHERE %s = %s" % data)
 		row = cursor.fetchall()
 		if len(row) == 0:
 			return None
 		return row[0][0]
-
-
 
 	@staticmethod
 	def answer_choices_for_question(question: str) -> List[Tuple[int, str]]:
@@ -317,6 +315,23 @@ class _DB:
 			)
 		return question_set_result
 
+	@staticmethod
+	def load_courses():
+		data = (
+			TBLCol.course_number,
+			TBLCol.course_name,
+			TBLCol.course_id,
+			TBL.Courses
+		)
+		cursor.execute("SELECT %s, %s, %s FROM %s" % data)
+		return cursor.fetchall()
+
+
+# Exposing functions that will be used publicly
+store_question_set = _DB.store_question_set
+load_question_set = _DB.load_question_set
+store_mapping_set = _DB.store_mapping_set
+load_courses = _DB.load_courses
 
 if __name__ == '__main__':
 	# cursor.execute('SELECT * FROM Questions WHERE question = \'coffee?\';')
@@ -338,8 +353,3 @@ if __name__ == '__main__':
 # get all the choices to a given question or data about it
 # deleting methods: question, question_set, answer_mapping, responses
 # todo - add a response token, which the owner can use to delete their response
-
-# Exposing functions that will be used publicly
-store_question_set = _DB.store_question_set
-load_question_set = _DB.load_question_set
-store_mapping_set = _DB.store_mapping_set

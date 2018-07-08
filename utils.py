@@ -197,6 +197,18 @@ def isinteger(s: Any) -> bool:
 	except ValueError:
 		return False
 
+def is_csv_string_vector(s: str, dimension: int = None) -> bool:
+	if not isinstance(s, str):
+		return False
+	vector = s.split(',')
+	for el in vector:
+		if not isinteger(el):
+			return False
+	if dimension is None:
+		return True
+	return len(vector) == dimension
+
+
 
 def create_asserter_to_boolean(
 		asserter_func: Callable,

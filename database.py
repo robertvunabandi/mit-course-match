@@ -84,24 +84,33 @@ class _DB:
 
 	@staticmethod
 	def question_set_id(qs_name: str) -> int or None:
-		return _DB.get_unique_id(
+		return _DB.get_unique_field(
 			tbl=TBL.QuestionSets,
 			id_col_name=TBLCol.question_set_id,
 			target_col_name=TBLCol.question_set_name,
-			target_value=qs_name
+			target_value="'" + qs_name + "'"
+		)
+
+	@staticmethod
+	def question_set_name(qsid: int) -> str or None:
+		return _DB.get_unique_field(
+			tbl=TBL.QuestionSets,
+			id_col_name=TBLCol.question_set_name,
+			target_col_name=TBLCol.question_set_id,
+			target_value=str(qsid)
 		)
 
 	@staticmethod
 	def question_id(question: str) -> int or None:
-		return _DB.get_unique_id(
+		return _DB.get_unique_field(
 			tbl=TBL.Questions,
 			id_col_name=TBLCol.question_id,
 			target_col_name=TBLCol.question,
-			target_value=question
+			target_value="'" + question + "'"
 		)
 
 	@staticmethod
-	def get_unique_id(
+	def get_unique_field(
 			tbl: str,
 			id_col_name: str,
 			target_col_name: str,
@@ -119,7 +128,7 @@ class _DB:
 			target_col_name equal to the target value
 		"""
 		data = (id_col_name, tbl, target_col_name, target_value)
-		cursor.execute("SELECT %s FROM %s WHERE %s = '%s'" % data)
+		cursor.execute("SELECT %s FROM %s WHERE %s = %s" % data)
 		row = cursor.fetchall()
 		if len(row) == 0:
 			return None
@@ -169,13 +178,17 @@ class _DB:
 
 	@staticmethod
 	def load_question_set(
-			qsid: int) -> List[Tuple[QID, SQuestion, List[Tuple[AID, SChoice]]]]:
+			qsid: int
+	) -> List[Tuple[QID, SQuestion, List[Tuple[AID, SChoice]]]]:
 		data = (
 			TBLCol.question_id,
 			TBL.QuestionMappings,
 			TBLCol.question_set_id,
 			qsid,
 		)
+		assert _DB.question_set_name(qsid) is not None, \
+			"there doesn't exist a question set with " \
+			"this qsid -> %s" % str(qsid)
 		cursor.execute("SELECT %s FROM %s WHERE %s = %s" % data)
 		question_id_list = [row[0] for row in cursor.fetchall()]
 		question_set_result = []

@@ -24,23 +24,8 @@ class QuestionAnswersToVectorMap:
 		self.question = question
 		self.dimension = dimension
 		self.answer_set = set(answer for _, answer in answers)
-		self.answer_id_to_answer_map = {aid: answer for aid, answer in answers}
-		self.map = {aid: None for aid in self.answer_id_to_answer_map}
-
-	def is_fully_mapped(self) -> bool:
-		return any([self.map[answer] is None for answer in self.map])
-
-	def map(self, answer: str, vector: List[int]) -> None:
-		assert answer in self.answer_set, 'the answer must be in the map'
-		QuestionAnswersToVectorMap.assert_valid_vector(vector, self.dimension)
-		aid = self.answer_id_to_answer_map[answer]
-		self.map[aid] = vector
-
-	def reset_dimension(self, dimension: int) -> None:
-		QuestionAnswersToVectorMap.assert_valid_dimension(dimension)
-		if self.dimension == dimension: return
-		self.dimension = dimension
-		self.map = {aid: None for aid in self.answer_id_to_answer_map}
+		self.aid_to_answer_map = {aid: answer for aid, answer in answers}
+		self.map = {aid: None for aid in self.aid_to_answer_map}
 
 	@staticmethod
 	def assert_valid_answer_input(answers: List[Tuple[AID, SChoice]]):
@@ -65,6 +50,41 @@ class QuestionAnswersToVectorMap:
 	def assert_valid_dimension(dimension: int) -> None:
 		assert type(dimension) == int, 'dimension must be an integer'
 
+	def is_fully_mapped(self) -> bool:
+		return any([self.map[answer] is None for answer in self.map])
+
+	def get_unmapped_choices(self):
+		return list(filter(lambda answer_tup: not self.is_mapped(answer_tup[0]), list(self)))
+
+	def is_mapped(self, answer: SChoice or AID) -> bool:
+		return self[self.aid_from_aid_or_choice(answer)] is not None
+
+	def __iter__(self) -> Tuple[AID, SChoice]:
+		for aid in self.aid_to_answer_map:
+			yield aid, self.aid_to_answer_map[aid]
+
+	def __setitem__(self, answer: SChoice or AID, vector: List[int]) -> None:
+		aid = self.aid_from_aid_or_choice(answer)
+		QuestionAnswersToVectorMap.assert_valid_vector(vector, self.dimension)
+		self.map[aid] = vector
+
+	def __getitem__(self, answer: SChoice or AID) -> List[int]:
+		return self.map[self.aid_from_aid_or_choice(answer)]
+
+	def aid_from_aid_or_choice(
+			self,
+			answer: SChoice or AID) -> AID:
+		if isinstance(answer, str):
+			assert answer in self.answer_set, 'the answer must be in the map'
+			return self.aid_to_answer_map[answer]
+		elif isinstance(answer, int):
+			assert answer in self.map, \
+				'aid must be in the answer set -> %s' % str(answer)
+			return AID(answer)
+		raise TypeError('Expecting %s or %s, instead got %s' % (
+			SChoice.__name__, AID.__name__, str(type(answer))
+		))
+
 	@staticmethod
 	def assert_valid_vector(vector: List[int], dimension: int) -> None:
 		assert type(vector) == list, 'vector must be a list'
@@ -73,6 +93,15 @@ class QuestionAnswersToVectorMap:
 				'vector must be a list of integers. failing at -> %s' % str(el)
 		assert len(vector) == dimension, 'vector must match the dimension'
 
+	def reset_dimension(self, dimension: int) -> None:
+		QuestionAnswersToVectorMap.assert_valid_dimension(dimension)
+		if self.dimension == dimension: return
+		self.dimension = dimension
+		self.reset_mapping()
+
+	def reset_mapping(self):
+		self.map = {aid: None for aid in self.aid_to_answer_map}
+
 	def get_writable(self) -> str:
 		return '\n'.join([
 			repr(self.qid) + ' (' + self.question + ')',
@@ -80,7 +109,7 @@ class QuestionAnswersToVectorMap:
 				''.join([
 					repr(aid),
 					' (',
-					str(self.answer_id_to_answer_map[aid]),
+					str(self.aid_to_answer_map[aid]),
 					')',
 					' -> ',
 					str(self.map[aid])
@@ -97,11 +126,20 @@ class MappingSetCreator:
 	eventually be used in the classifier.
 	"""
 
-	def __init__(self, qsid: int, ms_name: str = None):
+	def __init__(self, qsid: int, ms_name: str = None) -> None:
+		utils.assert_valid_db_id(qsid, 'QID')
 		self.qsid = QSID(qsid)
-		self.name = ms_name
-		self.question_map, self._resolver_map, self.qid_to_question_map = \
+		self.name = None
+		self.set_name(ms_name)
+		self.qatv_map, self._to_qid, self.qid_to_question_map = \
 			MappingSetCreator.parse_qs(database.load_question_set(qsid))
+
+	def set_name(self, ms_name: str = None):
+		if ms_name is None:
+			self.name = ms_name
+			return
+		assert isinstance(ms_name, str), 'name must be a string'
+		self.name = None if len(ms_name) == 0 else ms_name
 
 	@staticmethod
 	def parse_qs(
@@ -111,293 +149,117 @@ class MappingSetCreator:
 		Dict[QID or SQuestion, QID],
 		Dict[QID, SQuestion]
 	]:
-		question_map, resolver_map, qid_to_question_map = {}, {}, {}
+		qatv_map, map_to_qid, qid_to_question_map = {}, {}, {}
 		for qid, question, answers in qs:
-			resolver_map[qid] = qid
-			resolver_map[question] = qid
+			map_to_qid[qid] = qid
+			map_to_qid[question] = qid
 			qid_to_question_map[qid] = question
 			# creator is expected to reset the dimension and populate mapping
-			question_map[qid] = QuestionAnswersToVectorMap(qid, question, answers)
-		return question_map, resolver_map, qid_to_question_map
+			qatv_map[qid] = QuestionAnswersToVectorMap(qid, question, answers)
+		return qatv_map, map_to_qid, qid_to_question_map
 
-	def __getitem__(self, item):
-		return self.question_map[self._resolver_map[item]]
+	def __setitem__(
+			self,
+			question_identifier: Tuple[QID or SQuestion, AID or SChoice],
+			vector: List[int]) -> None:
+		assert type(question_identifier) == tuple, \
+			'question_identifier must be a ' \
+			'tuple -> %s' % str(question_identifier)
+		question, choice = question_identifier
+		self.qatv_map[self._to_qid[question]][choice] = vector
 
-	def __iter__(self):
-		for qid in self.question_map:
+	def __getitem__(
+			self,
+			identifier: QID or SQuestion) -> QuestionAnswersToVectorMap:
+		return self.qatv_map[self._to_qid[identifier]]
+
+	def get_uncompleted_questions(self):
+		return list(filter(
+			lambda question_tup: len(question_tup[2]) > 0,
+			[
+				(qid, question, self[qid].get_unmapped_choices())
+				for qid, question in self
+			]
+		))
+
+	def __iter__(self) -> Tuple[QID, SQuestion]:
+		for qid in self.qatv_map:
 			yield qid, self.qid_to_question_map[qid]
+
+	def reset_dimension_for_question(
+			self,
+			question_identifier: QID or SQuestion,
+			dimension: int) -> None:
+		self[question_identifier].reset_dimension(dimension)
 
 	def get_writable(self) -> str:
 		return '\n---\n'.join([
-			self.question_map[qid].get_writable() for qid in self.question_map
+			self.qatv_map[qid].get_writable() for qid in self.qatv_map
 		])
+
+	def store(self):
+		# todo - implement this method
+		raise NotImplementedError('GOT EM.')
+
+
+def start_interactive_mapping_set_creation():
+	"""
+	this allows one to create a mapping set of questions by just responding to
+	the terminal's prompts. It makes creating mappings a lot easier.
+	"""
+
+	question_set_id = utils.r_input(
+		'Please enter the question set id for which you want to create'
+		' mappings, or enter "%s" to quit: ' % utils.EXIT_PROMPT,
+		choices=lambda s: utils.isinteger(s) or s == utils.EXIT_PROMPT
+	)
+	if question_set_id == utils.EXIT_PROMPT:
+		utils.log_notice('quitting...!')
+		return
+	try:
+		msc = MappingSetCreator(int(question_set_id))
+	except AssertionError:
+		utils.log_error('Your question set was not found.')
+		utils.log_notice('quitting...!')
+		return
+	ms_name = utils.r_input(
+		'Enter a name for your new mapping set, or leave '
+		'it blank for something random: '
+	)
+	msc.set_name(ms_name)
+	for qid, question, choice_list in msc.get_uncompleted_questions():
+		utils.log_prompt(
+			"\nYou will now create vector mappings for the "
+			"question '%s'." % question
+		)
+		dimension = int(utils.r_input(
+			'now, enter a dimension for the vectors in this question: ',
+			choices=lambda s: utils.isinteger(s),
+			invalid_input_message='you must enter an integer'
+		))
+		msc.reset_dimension_for_question(qid, dimension)
+		example = ','.join(['0' for _ in range(dimension)])
+		should_remap = True
+		while should_remap:
+			for aid, choice in choice_list:
+				vector = utils.r_input(
+					"Enter a vector in csv format for the choice '%s'. Make "
+					"sure that you have the dimensions %s. For example, you "
+					"may enter '%s': " % (choice, str(dimension), example)
+				)
+				msc[(qid, aid)] = [int(el) for el in vector.split(',')]
+			utils.log_prompt(
+				"here is a summary of the mappings you just did.\n-\n%s\n-\n "
+				"Would you like to redo it?" % msc[qid].get_writable()
+			)
+			should_remap = utils.r_input_yn('Please answer.')
+		utils.log_prompt('moving on...')
+	if utils.r_input_yn('would you like to review all mappings?'):
+		utils.log_notice(msc.get_writable())
+	if utils.r_input_yn('would you like to store this mapping?'):
+		msc.store()
+	utils.log_prompt('you are done!')
 
 
 if __name__ == '__main__':
-	a = MappingSetCreator(3)
-	print(a.get_writable())
-
-
-class QuestionToVectorAnswersMap:
-	"""
-	Allow to create a mapping for a given question
-	A QMapping contains:
-	- question_id
-	- choices
-	- dimensions
-	- map
-
-	The map is a dictionary that maps each answer to a given
-	vector representation. This vector has the dimensions
-	given when calling the __init__ method. Eventually, there
-	will be a way to generate a string that can be stored into
-	the text format.
-	"""
-
-	def __init__(
-			self,
-			question_id: str,
-			answers: List[str],
-			dimension: int = 1) -> None:
-		"""
-		map the question id to a set of vector as response. we
-		detach the Mapping object from knowing what the true
-		of the question is.
-		:param answer_count: the number of choices for this question
-		:param question_id: the id of the question
-		:param dimension: how many dimension the vector for each answer will be
-		"""
-		assert isinstance(question_id, int), 'question_id must be a string'
-		assert type(answers) == list, 'choices must be a list'
-		assert type(dimension) == int, 'dimension must be an integer'
-		self.question_id = question_id
-		self.answers = answers
-		self.dimension = dimension
-		self.map = {}
-
-	def __setitem__(self, answer: str, vector: List[int]) -> None:
-		"""
-		map the question to this vector, which must be a list of length dimension
-		"""
-		assert type(answer) == str, 'the answer must be a string'
-		assert type(vector) == list, 'vector must be a list'
-		assert len(vector) == self.dimension, 'the vector must match the mapping\'s dimension'
-		assert all([type(n) == int for n in vector]), 'the elements in the vector must be integers'
-		self.map[answer] = vector
-
-	def is_fully_mapped(self) -> bool:
-		"""
-		check if every answer has been mapped to a vector
-		"""
-		return None not in [
-			self.map.get(answer, None) for answer in self.answers
-		]
-
-	def get_writable(self):
-		err_msg = 'cannot generate the writable without being fully mapped'
-		assert self.is_fully_mapped(), err_msg
-		return self.question_id + '\n' + ';'.join([
-			','.join([str(i) for i in self.map[answer]])
-			for answer in self.answers
-		])
-
-
-class QuestionSetMapper:
-	"""
-	mapping question_ids to questions and vector choices
-
-	this is simply to convert the questions that we read
-	from the question file into a format that can be easily
-	parsed (i.e. vectors)
-	"""
-
-	def __init__(self, q_file_lines: List[str]) -> None:
-		# each set of 3 lines must be a question
-		self.map = {}
-		for i in range(0, len(q_file_lines), 3):
-			self.create_map_for_question(q_file_lines[i:i + 3])
-
-	def create_map_for_question(self, row: List[str]) -> None:
-		assert len(row) == 3, 'each question must have 3 components'
-		id, question, answers = row
-		self.map[id] = {'question': question, 'choices': answers.split(',')}
-
-	def get_mapped_question_and_answer(self, question_id: str):
-		return self.map[question_id]['question'], self.map[question_id]['choices']
-
-	def __iter__(self):
-		for question_id in self.map:
-			yield question_id
-
-
-class QuestionSetMapCreator:
-	"""
-	create mappings that will be added to
-	the data_format folder for a question set
-
-	this class helps with the creation questions, which will
-	eventually be stored in the data_format folder.
-	"""
-
-	def __init__(self, question_set_id: str) -> None:
-		self.question_set_id = question_set_id
-		self.questions_mapper = QuestionSetMapCreator.load_questions(question_set_id)
-		# map question_id's to a QuestionToVectorAnswersMap in self.mappings
-		self.mappings = {}
-
-	@staticmethod
-	def load_questions(question_set_id: str) -> QuestionSetMapper:
-		file_path = utils.get_data_format_path() + '/q-%s.txt' % question_set_id
-		with open(file_path, 'r', encoding='utf-8') as question_file:
-			question_set = QuestionSetMapper([
-				line.strip('\n') for line in question_file.readlines()
-			])
-			question_file.close()
-			return question_set
-
-	@staticmethod
-	def start_interactive_mapping_set_creation():
-		"""
-			this allows one to create a mapping set of questions by just responding to
-			the terminal's prompts. It makes creating mappings a lot easier.
-			"""
-		while True:
-			utils.log_prompt(
-				'Please enter the question set id for which you want to create'
-				' mappings or enter "%s" to quit:' % utils.EXIT_PROMPT
-			)
-			question_set_id = input()
-			if question_set_id == utils.EXIT_PROMPT:
-				utils.log_notice('quitting...!')
-				return False
-			try:
-				msc = QuestionSetMapCreator(question_set_id)
-			except FileNotFoundError:
-				utils.log_error('Your question set was not found. Try again.')
-				continue
-			break
-		msc.set_mappings_interactively()
-		# once done with setting the mappings for all questions, we ensure
-		# the user is able to see everything one more time and then confirm
-		if utils.r_input_yn(
-				'would you like to see the mappings before saving?'
-		):
-			utils.log_notice(msc.get_writable())
-		if utils.r_input_yn(
-				'do you want to store this set of mapping?'
-		):
-			msc.store_into_data_format()
-		utils.log_prompt('you are done!')
-
-	def set_mappings_interactively(self) -> None:
-		for question_id in self.questions_mapper:
-			question, answers = self.questions_mapper.get_mapped_question_and_answer(question_id)
-			mapping = QuestionSetMapCreator.create_mapping_interactively(
-				question_id,
-				question,
-				answers
-			)
-			self.mappings[question_id] = mapping
-
-	@staticmethod
-	def create_mapping_interactively(
-			question_id: str,
-			question: str,
-			answers: List[str]) -> QuestionToVectorAnswersMap:
-		"""
-		set the mapping for one question interactively by answering
-		to the terminal
-		todo - there should also be a way to just set the mapping programmatically
-		"""
-		utils.log_prompt('The current question is:')
-		utils.log_notice(utils.Color.yellow(question))
-		utils.log_prompt('and the current set of choices are ')
-		utils.log_notice(str(answers))
-		if utils.r_input_yn(
-				'would you like to use a one-hot encoding here?'
-		):
-			dimension = len(answers)
-			qmap = QuestionToVectorAnswersMap(question_id, answers, dimension)
-			for i in range(dimension):
-				qmap[answers[i]] = [1 if j == i else 0 for j in range(dimension)]
-			utils.log_prompt('You are now done with this question!\n')
-			return qmap
-
-		dimension = int(utils.r_input(
-			'Choose a dimension. This must be an integer!\n',
-			choices=utils.isinteger,
-			invalid_input_message='Invalid answer. You must enter an integer.'))
-		utils.log_prompt([
-			'Ensure that each of your responses have %d numbers.' % dimension,
-			'In the following section, enter vectors as a comma separated ',
-			'list of integers. For 1 dimension, just enter an integer.',
-		])
-		qmap = QuestionToVectorAnswersMap(question_id, answers, dimension)
-		for answer in answers:
-			qmap[answer] = QuestionSetMapCreator.generate_mapping_for_answer(answer, dimension)
-		utils.log_prompt('You are now done with this question!\n')
-		return qmap
-
-	@staticmethod
-	def generate_mapping_for_answer(answer: str, dimension: int):
-		prompt_reminder, remind = utils.Color.prompt(
-			'remember to enter only numbers in comma separated value '
-			'to match the dimension %d. ' % dimension
-		), False
-		text = \
-			utils.Color.prompt('Enter the mapping for answer "') + \
-			utils.Color.yellow(answer) + \
-			utils.Color.prompt('":\n')
-		while True:
-			prompt_text = prompt_reminder if remind else '' + text
-			mapping, remind = input(prompt_text), True
-			try:
-				mapping = [int(el) for el in mapping.split(',')]
-				assert len(mapping) == dimension, 'answer must match dimension'
-			except ValueError:
-				utils.log_error(
-					'please, enter only numbers in comma separated format'
-				)
-				continue
-			except AssertionError:
-				utils.log_error(
-					'please, ensure that the numbers match the dimension'
-				)
-				continue
-			except:
-				utils.log_error(
-					'an unknown error occurred, ensure the inputs are correct'
-				)
-				continue
-			break
-		return mapping
-
-	def store_into_data_format(self) -> None:
-		mapping_id = utils.generate_unique_id(
-			QuestionSetMapCreator.get_existing_mapping_set_ids(self.question_set_id),
-			utils.generate_mapping_id
-		)
-		file_name = 'm-%s-%s.txt' % (self.question_set_id, mapping_id)
-		file_path = utils.get_data_format_path() + '/%s' % file_name
-		with open(file_path, 'w') as question_file:
-			question_file.write(self.get_writable())
-			question_file.close()
-		utils.log_prompt('your question mapping set file has been stored as:')
-		utils.log_notice(file_name)
-
-	@staticmethod
-	def get_existing_mapping_set_ids(question_set_id: str):
-		return set([
-			file_name[6:].strip('.txt')
-			for file_name in os.listdir(utils.get_data_format_path())
-			if file_name[:5] == 'm-%s' % question_set_id
-		])
-
-	def get_writable(self) -> str:
-		return '\n'.join([
-			self.mappings[question_id].get_writable()
-			for question_id in self.questions_mapper
-		])
-
-# if __name__ == '__main__':
-# 	QuestionSetMapCreator.start_interactive_mapping_set_creation()
+	start_interactive_mapping_set_creation()

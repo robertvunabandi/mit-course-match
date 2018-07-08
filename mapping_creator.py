@@ -117,6 +117,9 @@ class QuestionAnswersToVectorMap:
 			]),
 		])
 
+	def tolist(self) -> List[Tuple[AID, List[int]]]:
+		return [(aid, self[aid]) for aid in self.aid_to_answer_map]
+
 
 class MappingSetCreator:
 	"""
@@ -198,8 +201,15 @@ class MappingSetCreator:
 		])
 
 	def store(self):
-		# todo - implement this method
+		# todo - finish up implementation in db
+		database.store_mapping_set(self.tolist(), self.qsid, self.name)
 		raise NotImplementedError('GOT EM.')
+
+	def tolist(self) -> List[Tuple[QID, SQuestion, List[Tuple[AID, List[int]]]]]:
+		return [
+			(qid, question, self[qid].tolist())
+			for qid, question in self
+		]
 
 
 def start_interactive_mapping_set_creation():

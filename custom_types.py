@@ -10,12 +10,12 @@ class Vector(np.ndarray):
 		assert isinstance(vec, np.ndarray), err_msg
 
 	@staticmethod
-	def is_col_vector(vec: np.ndarray) -> None:
+	def is_col_vector(vec: Any) -> bool:
 		Vector.assert_is_np_array(vec)
 		return vec.shape[1] == 1
 
 	@staticmethod
-	def is_row_vector(vec: np.ndarray) -> None:
+	def is_row_vector(vec: Any) -> bool:
 		Vector.assert_is_np_array(vec)
 		return vec.shape[0] == 1
 
@@ -41,13 +41,29 @@ class Vector(np.ndarray):
 
 
 class ColumnVector(Vector):
-	def __instancecheck__(self, instance):
+	def __instancecheck__(self, instance: Any) -> bool:
 		return Vector.is_col_vector(instance)
 
 
 class RowVector(Vector):
-	def __instancecheck__(self, instance):
+	def __instancecheck__(self, instance: Any) -> bool:
 		return Vector.is_row_vector(instance)
+
+
+class IntVectorList:
+	element_types = {int}
+
+	def __instancecheck__(self, instance: Any) -> bool:
+		if type(instance) != list:
+			return False
+		for item in instance:
+			if type(item) not in IntVectorList.element_types:
+				return False
+		return True
+
+
+class FloatVectorList:
+	element_types = {int, float}
 
 
 class MITCourse:

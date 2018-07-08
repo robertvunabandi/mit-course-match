@@ -34,13 +34,31 @@ class _DB:
 
 	@staticmethod
 	@_commit
+	def store_mapping_set(
+			mapping_set: List[Tuple[QID, SQuestion, List[Tuple[AID, List[int]]]]],
+			qsid: int,
+			ms_name: str = None) -> None:
+		ms_name = _DB.create_or_make_ms_name_unique(ms_name)
+		# create the mapping set
+		data = (
+			TBL.MappingSets,
+			TBLCol.question_set_id,
+			TBLCol.mapping_set_name,
+			str(qsid),
+			ms_name
+		)
+		cursor.execute("INSERT INTO %s (%s, %s) VALUES (%s, '%s')" % data)
+		# todo - continue this from here
+		raise NotImplementedError
+
+	@staticmethod
+	@_commit
 	def store_question_set(
 			question_set: List[Tuple[str, List[str]]],
 			qs_name: str = None) -> None:
 		qs_name = _DB.create_or_make_qs_name_unique(qs_name)
 		# create the question set
 		data = (TBL.QuestionSets, TBLCol.question_set_name, qs_name)
-
 		cursor.execute("INSERT INTO %s (%s) VALUES ('%s')" % data)
 		# add the questions into the db
 		# todo - this may throw an error in case the question exists, so handle that
@@ -60,27 +78,62 @@ class _DB:
 		cursor.execute("INSERT INTO %s (%s, %s) VALUES %s;" % data)
 
 	@staticmethod
+	def create_or_make_ms_name_unique(ms_name: str = None) -> str:
+		return _DB.create_or_make_name_unique(
+			ms_name,
+			_DB.get_all_mapping_set_names(),
+			utils.generate_mapping_set_name,
+			utils.generate_mapping_set_extension,
+			minimum_name_length=4)
+
+
+	@staticmethod
 	def create_or_make_qs_name_unique(qs_name: str = None) -> str:
-		"""
-		fix the qs_name such that it's unique when stored in the db
-		:param qs_name: the assigned name of the question set
-		:return: updated qs_name such that it's unique
-		"""
-		qs_name_set = _DB.get_all_question_set_names()
-		if qs_name is None or len(qs_name) == 0:
-			return utils.generate_unique_id(
-				qs_name_set, utils.generate_question_set_name
-			)
-		qs_extension = ""
-		while qs_name + qs_extension in qs_name_set or len(qs_name) < 4:
-			qs_extension = '-' + utils.generate_question_set_extension()
-		return qs_name + qs_extension
+		return _DB.create_or_make_name_unique(
+			qs_name,
+			_DB.get_all_question_set_names(),
+			utils.generate_question_set_name,
+			utils.generate_question_set_extension,
+			minimum_name_length=4)
+
+	@staticmethod
+	def get_all_mapping_set_names() -> Set[str]:
+		data = (TBLCol.mapping_set_name, TBL.MappingSets)
+		cursor.execute('SELECT %s FROM %s' % data)
+		return set(el[0] for el in cursor.fetchall())
 
 	@staticmethod
 	def get_all_question_set_names() -> Set[str]:
 		data = (TBLCol.question_set_name, TBL.QuestionSets)
 		cursor.execute('SELECT %s FROM %s' % data)
 		return set(el[0] for el in cursor.fetchall())
+
+	@staticmethod
+	def create_or_make_name_unique(
+			name: str or None,
+			taken_name_set: Set[str],
+			name_generator_func: Callable,
+			name_extension_generation_func: Callable,
+			minimum_name_length: int = 4) -> str:
+		"""
+		fix the name such that it's unique when stored in the db
+		:param name: a string that represents the name for a given table column
+		:param taken_name_set: a set of names not to use
+		:param name_generator_func: a function that generates names
+		:param name_extension_generation_func:
+			a functions that generate extensions for names. if this name is
+			not unique, this function generates a random string. then, the
+			new name will be '{name}-{generated_random_extension}'
+		:param minimum_name_length: the minimum length the name has to be
+		"""
+		if name is None or len(name) == 0:
+			return utils.generate_unique_id(
+				taken_name_set, name_generator_func
+			)
+		name_extension = ""
+		while name + name_extension in taken_name_set or len(name) < minimum_name_length:
+			name_extension = '-' + name_extension_generation_func()
+		return name + name_extension
 
 	@staticmethod
 	def question_set_id(qs_name: str) -> int or None:
@@ -243,3 +296,4 @@ if __name__ == '__main__':
 # Exposing functions that will be used publicly
 store_question_set = _DB.store_question_set
 load_question_set = _DB.load_question_set
+store_mapping_set = _DB.store_mapping_set

@@ -316,9 +316,20 @@ class _DB:
 		return question_set_result
 
 	@staticmethod
-	def load_mapping_set(msid: MSID):
-		# todo - implement this method
-		raise NotImplementedError
+	def load_mapping_set(msid: MSID) -> List[Tuple[QID, AID, str]]:
+		data = (
+			TBLCol.question_id, TBLCol.answer_id, TBLCol.vector,
+			TBL.AnswerMappings, TBL.AnswerChoices,
+			TBLCol.answer_id, TBLCol.answer_id,
+			TBLCol.mapping_set_id, str(msid)
+		)
+		cursor.execute("""
+			SELECT b.%s, a.%s, a.%s 
+			FROM %s a JOIN %s b 
+			ON a.%s = b.%s 
+			WHERE a.%s = %s
+			""" % data)
+		return cursor.fetchall()
 
 	@staticmethod
 	def load_courses():
@@ -345,7 +356,8 @@ if __name__ == '__main__':
 	# DB.add_question('Ice Cream?', ['nah', 'YEAH', 'hell no'])
 	# cursor.execute('SELECT aid, qid, choice FROM AnswerChoices;')
 	# print(cursor.fetchall())
-	print(_DB.answer_choices_for_question('coffee?'))
+	# print(_DB.answer_choices_for_question('coffee?'))
+	print(_DB.load_mapping_set(MSID(2)))
 
 # todo - Methods to build:
 # get a list of courses

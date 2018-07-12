@@ -153,16 +153,22 @@ class CourseObj:
 class QuestionAnswerManager:
 	def __init__(self, qsid: QSID, msid: MSID) -> None:
 		self.qsid, self.msid = qsid, msid
-		self.qid_resolver:Dict[QID or SQuestion, QID] = None
-		self.aid_resolver:Dict[QID, Dict[AID or SChoice, AID]] = None
+		self.qid_resolver: Dict[QID or SQuestion, QID] = None
+		self.aid_resolver: Dict[QID, Dict[AID or SChoice, AID]] = None
 		self.question_order: Dict[QID, int] = None
 		self.answer_order: Dict[QID, Dict[AID, int]] = None
+		self.aid_to_qid_map: Dict[AID, QID] = None
+		self.answer_to_vector_map: Dict[QID, Dict[AID, np.ndarray]] = None
+		self.question_dimension_map: Dict[QID, int] = None
+		self._input_dimension: int = None
 		self.setup()
 
 	def setup(self) -> None:
+		# load variables using the question set is
 		question_resolver, answer_resolver = {}, {}
 		question_list, answer_map_list = [], {}
 		question_order, answer_order = {}, {}
+		aid_to_qid_map = {}
 		for qid_, question_, answers in database.load_question_set(self.qsid):
 			qid, question = QID(qid_), SQuestion(question_)
 			question_resolver[question] = qid
@@ -174,33 +180,59 @@ class QuestionAnswerManager:
 				answer_resolver[qid][choice] = aid
 				answer_resolver[qid][aid] = aid
 				answer_map_list[qid].append(choice)
-			for aid, index in enumerate(sorted(answer_map_list[qid])):
+				aid_to_qid_map[aid] = qid
+			for index, aid in enumerate(sorted(answer_map_list[qid])):
 				answer_order[qid][aid] = index
 			question_list.append(qid)
-		for qid, index in enumerate(sorted(question_list)):
+		for index, qid in enumerate(sorted(question_list)):
 			question_order[qid] = index
+
 		self.qid_resolver = question_resolver
 		self.aid_resolver = answer_resolver
 		self.question_order = question_order
 		self.answer_order = answer_order
+		self.aid_to_qid_map = aid_to_qid_map
 
+		# load variables from the mapping set id
+		answer_to_vector_map = {}
+		question_dimension_map = {}
+		input_dimension = 0
+		for qid_, aid_, vector_text in database.load_mapping_set(self.msid):
+			qid, aid = QID(qid_), AID(aid_)
+			vector = np.array([[int(el) for el in vector_text.split(',')]])
+			question_dimension_map[qid] = question_dimension_map.get(qid, None)
+			answer_to_vector_map[qid] = answer_to_vector_map.get(qid, {})
+			answer_to_vector_map[qid][aid] = vector
+			if question_dimension_map[qid] is None:
+				question_dimension_map[qid] = vector.shape[1]
+			assert question_dimension_map[qid] == vector.shape[1], \
+				"dimensions for the same qid don't match -> %s" % str(qid)
+			input_dimension += question_dimension_map[qid]
+
+		self.answer_to_vector_map = answer_to_vector_map
+		self.question_dimension_map = question_dimension_map
+		self._input_dimension = input_dimension
 
 	def question_index(self, q_identifier: QID or SQuestion) -> int:
 		return self.question_order[self.qid_resolver[q_identifier]]
+
+	def question_dimension(self, q_identifier: QID or SQuestion) -> int:
+		return self.question_dimension_map[self.qid_resolver[q_identifier]]
 
 	def answer_vector(
 			self,
 			q_identifier: QID or SQuestion,
 			aid_identifier: AID or SChoice) -> np.ndarray:
-		raise NotImplementedError
+		qid = self.qid_resolver[q_identifier]
+		aid = self.aid_resolver[qid][aid_identifier]
+		return self.answer_to_vector_map[qid][aid]
+
+	def answer_vector_from_aid(self, aid: AID) -> np.ndarray:
+		return self.answer_to_vector_map[self.aid_to_qid_map[aid]][aid]
 
 	@property
 	def input_dimension(self) -> int:
-		raise NotImplementedError
-
-
-if __name__ == '__main__':
-	a = CourseObj()
+		return self._input_dimension
 
 
 class DataParser:
@@ -218,7 +250,7 @@ class DataParser:
 		self.course_obj = CourseObj()
 		self.qa_manager = QuestionAnswerManager(self.qsid, self.msid)
 		self.base_answer_vector = np.zeros((1, self.input_dimension))
-		raise NotImplementedError
+		self.refresh_responses()
 
 	@property
 	def input_dimension(self) -> int:
@@ -234,10 +266,7 @@ class DataParser:
 			answer_identifier: SChoice or AID) -> None:
 		index = self.qa_manager.question_index(question_identifier)
 		vector = self.qa_manager.answer_vector(question_identifier, answer_identifier)
-		self.answer_vector[:,index:index + vector.shape[1]] = vector
-
-	def store_responses(self, course: SCourse or CID) -> None:
-		raise NotImplementedError
+		self.answer_vector[:, index:index + vector.shape[1]] = vector
 
 	def refresh_responses(self) -> None:
 		self.answer_vector = self.base_answer_vector.copy()
@@ -253,6 +282,9 @@ class DataParser:
 		data parser.
 		:param rid: response id
 		"""
+		raise NotImplementedError
+
+	def store_responses(self, course: SCourse or CID = None) -> None:
 		raise NotImplementedError
 
 	def __iter__(self) -> QID:

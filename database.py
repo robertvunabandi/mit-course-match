@@ -341,8 +341,6 @@ if __name__ == '__main__':
 	# print(cursor.fetchall())
 	print(_DB.answer_choices_for_question('coffee?'))
 
-# todo - need to learn about cascade deletes and alter tables to allow it then implement it
-# this may be unsustainable to build before moving on. These methods should be built as needed!
 # todo - Methods to build:
 # get a list of courses
 # get stored responses from the db, add count parameter

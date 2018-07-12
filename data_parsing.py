@@ -9,7 +9,7 @@ from custom_types import \
 	QID, AID, CID, RID, QSID, MSID, SQuestion, SChoice
 
 
-class QuestionManager:
+class QuestionManagerOld:
 	"""
 	helps with various things related to questions
 	"""
@@ -59,7 +59,7 @@ class QuestionManager:
 		return self.map[question_id]['choices']
 
 
-class AnswerManager:
+class AnswerManagerOld:
 	def __init__(
 			self,
 			question_set_id: QuestionSetID,
@@ -150,6 +150,55 @@ class CourseObj:
 		return self.get_course_vector(cid)
 
 
+class QuestionAnswerManager:
+	def __init__(self, qsid: QSID, msid: MSID) -> None:
+		self.qsid, self.msid = qsid, msid
+		self.qid_resolver:Dict[QID or SQuestion, QID] = None
+		self.aid_resolver:Dict[QID, Dict[AID or SChoice, AID]] = None
+		self.question_order: Dict[QID, int] = None
+		self.answer_order: Dict[QID, Dict[AID, int]] = None
+		self.setup()
+
+	def setup(self) -> None:
+		question_resolver, answer_resolver = {}, {}
+		question_list, answer_map_list = [], {}
+		question_order, answer_order = {}, {}
+		for qid_, question_, answers in database.load_question_set(self.qsid):
+			qid, question = QID(qid_), SQuestion(question_)
+			question_resolver[question] = qid
+			question_resolver[qid] = qid
+			answer_resolver[qid] = {}
+			answer_map_list[qid], answer_order[qid] = [], {}
+			for aid_, choice_ in answers:
+				aid, choice = AID(aid_), SChoice(choice_)
+				answer_resolver[qid][choice] = aid
+				answer_resolver[qid][aid] = aid
+				answer_map_list[qid].append(choice)
+			for aid, index in enumerate(sorted(answer_map_list[qid])):
+				answer_order[qid][aid] = index
+			question_list.append(qid)
+		for qid, index in enumerate(sorted(question_list)):
+			question_order[qid] = index
+		self.qid_resolver = question_resolver
+		self.aid_resolver = answer_resolver
+		self.question_order = question_order
+		self.answer_order = answer_order
+
+
+	def question_index(self, q_identifier: QID or SQuestion) -> int:
+		return self.question_order[self.qid_resolver[q_identifier]]
+
+	def answer_vector(
+			self,
+			q_identifier: QID or SQuestion,
+			aid_identifier: AID or SChoice) -> np.ndarray:
+		raise NotImplementedError
+
+	@property
+	def input_dimension(self) -> int:
+		raise NotImplementedError
+
+
 if __name__ == '__main__':
 	a = CourseObj()
 
@@ -159,18 +208,23 @@ class DataParser:
 		utils.assert_valid_db_id(qsid, QSID.__name__)
 		utils.assert_valid_db_id(msid, MSID.__name__)
 		self.qsid, self.msid = qsid, msid
+		self.course_obj: CourseObj = None
+		self.qa_manager: QuestionAnswerManager = None
 		self.base_answer_vector: np.ndarray = None
 		self.answer_vector: np.ndarray = None
-		self.course_obj: CourseObj = None
 		self.setup()
 
 	def setup(self) -> None:
 		self.course_obj = CourseObj()
+		self.qa_manager = QuestionAnswerManager(self.qsid, self.msid)
+		self.base_answer_vector = np.zeros((1, self.input_dimension))
 		raise NotImplementedError
 
+	@property
 	def input_dimension(self) -> int:
-		raise NotImplementedError
+		return self.qa_manager.input_dimension
 
+	@property
 	def output_dimension(self) -> int:
 		return self.course_obj.course_count
 
@@ -178,13 +232,15 @@ class DataParser:
 			self,
 			question_identifier: SQuestion or QID,
 			answer_identifier: SChoice or AID) -> None:
-		raise NotImplementedError
+		index = self.qa_manager.question_index(question_identifier)
+		vector = self.qa_manager.answer_vector(question_identifier, answer_identifier)
+		self.answer_vector[:,index:index + vector.shape[1]] = vector
 
 	def store_responses(self, course: SCourse or CID) -> None:
 		raise NotImplementedError
 
 	def refresh_responses(self) -> None:
-		raise NotImplementedError
+		self.answer_vector = self.base_answer_vector.copy()
 
 	def load_training_data(
 			self,

@@ -2,7 +2,7 @@ import utils
 from sql.sql import cursor, cnx
 from sql.sql_constants import TBL, TBLCol
 from typing import List, Callable, Tuple, Set
-from custom_types import SChoice, SQuestion, QID, AID
+from custom_types import SChoice, SQuestion, QID, AID, MSID, QSID
 
 
 # todo - add ways to prevent sql injections
@@ -316,6 +316,11 @@ class _DB:
 		return question_set_result
 
 	@staticmethod
+	def load_mapping_set(msid: MSID):
+		# todo - implement this method
+		raise NotImplementedError
+
+	@staticmethod
 	def load_courses():
 		data = (
 			TBLCol.course_number,
@@ -330,6 +335,7 @@ class _DB:
 # Exposing functions that will be used publicly
 store_question_set = _DB.store_question_set
 load_question_set = _DB.load_question_set
+load_mapping_set = _DB.load_mapping_set
 store_mapping_set = _DB.store_mapping_set
 load_courses = _DB.load_courses
 

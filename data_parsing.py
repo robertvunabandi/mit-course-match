@@ -280,7 +280,6 @@ class DataParser:
 		mapping (qid, question) to (aid, choice) for that response.
 		for v1, we expect the rid to have qsid and msid of this instance of
 		data parser.
-		:param rid: response id
 		"""
 		raise NotImplementedError
 

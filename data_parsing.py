@@ -308,15 +308,13 @@ class DataParser:
 	def refresh_responses(self) -> None:
 		self.answer_vector = self.base_answer_vector.copy()
 
-	def load_training_data(
-			self,
-			rid: RID
-	) -> Tuple[CID, Dict[Tuple[QID, SQuestion], Tuple[AID, SChoice]]]:
+	def load_training_data(self) -> Tuple[np.ndarray, np.ndarray]:
 		"""
-		loads the course id for the training data response and a dictionary
-		mapping (qid, question) to (aid, choice) for that response.
-		for v1, we expect the rid to have qsid and msid of this instance of
-		data parser.
+		load the training data that matches self's qsid. this is data stored
+		in the db. this data are the labelled responses in the database. the
+		data is directly converted to vectors to be used in the classifier.
+		the conversion is done through using the mapping from self's msid.
+		:return: a tuple of data and label for that data
 		"""
 		raise NotImplementedError
 
@@ -334,9 +332,6 @@ class DataParser:
 		for qid in self.raw_responses:
 			assert self.raw_responses.get(qid, None) is not None, \
 				'the answer with qid %s is not answered' % str(qid)
-
-	def __iter__(self) -> QID:
-		raise NotImplementedError
 
 
 # ------------------------------------------------------------

@@ -2,7 +2,8 @@ import utils
 from sql.sql import cursor, cnx
 from sql.sql_constants import TBL, TBLCol
 from typing import List, Callable, Tuple, Set
-from custom_types import SChoice, SQuestion, QID, AID, MSID, QSID
+from custom_types import \
+	SChoice, SQuestion, SCourseNumber, SCourse, QID, AID, CID, MSID, QSID
 
 
 # todo - add ways to prevent sql injections
@@ -31,6 +32,53 @@ class _DB:
 	sql queries. This abstracts away how the database works and what queries
 	are called from the caller.
 	"""
+
+	@staticmethod
+	@_commit
+	def store_response_set(
+			responses: List[Tuple[QID, AID]],
+			qsid: QSID,
+			course_bundle: Tuple[CID, SCourseNumber, SCourse] or None = None) -> None:
+		# todo - test this method
+		# first insert the whole response set
+		response_salt = _DB.create_response_salt_unique()
+		if course_bundle is None:
+			data = (
+				TBL.Responses,
+				TBLCol.question_set_id,
+				TBLCol.response_salt,
+				str(qsid),
+				response_salt
+			)
+			query = "INSERT INTO %s (%s, %s) VALUES (%s, %s)"
+		else:
+			cid, cn, course = course_bundle
+			data = (
+				TBL.Responses,
+				TBLCol.question_set_id,
+				TBLCol.response_salt,
+				TBLCol.course_number,
+				TBLCol.course_id,
+				str(qsid),
+				response_salt,
+				cn,
+				str(cid)
+			)
+			query = "INSERT INTO %s (%s, %s, %s, %s) VALUES (%s, %s, %s, %s)"
+		cursor.execute(query % data)
+		# then insert the questions's answers
+		rid = _DB.response_id(response_salt)
+		values = ", ".join([
+			"(" + ", ".join([str(rid), str(qid), str(aid)]) + ")"
+			for qid, aid in responses
+		])
+		data = (
+			TBL.ResponseMappings,
+			TBLCol.response_id,
+			TBLCol.question_id,
+			TBLCol.answer_id,
+			values)
+		cursor.execute("INSERT INTO %s (%s, %s, %s) VALUES %s" % data)
 
 	@staticmethod
 	@_commit
@@ -139,6 +187,19 @@ class _DB:
 		return set(el[0] for el in cursor.fetchall())
 
 	@staticmethod
+	def get_all_response_salts() -> Set[str]:
+		data = (TBLCol.response_salt, TBL.Responses)
+		cursor.execute('SLECT %s FROM %s', data)
+		return set(el[0] for el in cursor.fetchall())
+
+	@staticmethod
+	def create_response_salt_unique() -> str:
+		return utils.generate_unique_id(
+			_DB.get_all_response_salts(),
+			utils.generate_response_salt
+		)
+
+	@staticmethod
 	def create_or_make_ms_name_unique(ms_name: str = None) -> str:
 		return _DB.create_or_make_name_unique(
 			ms_name,
@@ -228,6 +289,15 @@ class _DB:
 			unique_col_name=TBLCol.question_id,
 			target_col_name=TBLCol.question,
 			target_value="'" + question + "'"
+		)
+
+	@staticmethod
+	def response_id(response_salt: str) -> int or None:
+		return _DB.get_unique_field(
+			tbl=TBL.Responses,
+			unique_col_name=TBLCol.response_id,
+			target_col_name=TBLCol.response_salt,
+			target_value="'" + response_salt + "'"
 		)
 
 	@staticmethod
@@ -349,6 +419,7 @@ load_question_set = _DB.load_question_set
 load_mapping_set = _DB.load_mapping_set
 store_mapping_set = _DB.store_mapping_set
 load_courses = _DB.load_courses
+store_response_set = _DB.store_response_set
 
 if __name__ == '__main__':
 	# cursor.execute('SELECT * FROM Questions WHERE question = \'coffee?\';')

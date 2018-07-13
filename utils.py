@@ -20,6 +20,10 @@ def _generate_id(alphabet: List[str], length: int) -> str:
 	return "".join([_random_character(alphabet) for _ in range(length)])
 
 
+def generate_response_salt() -> str:
+	return _generate_id(ALPHANUMERIC_ALPHABET, 10)
+
+
 def generate_question_set_name() -> str:
 	return _generate_id(ALPHANUMERIC_ALPHABET, 12)
 

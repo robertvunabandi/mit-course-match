@@ -1,7 +1,7 @@
 import os
 import utils
 import numpy as np
-from typing import Tuple, List, Dict
+from typing import Iterable, Tuple, List, Dict, Set
 import database
 from custom_types import \
 	Vector, RowVector, QuestionID, AnswerSetID, QuestionSetID, MappingSetID, \
@@ -149,6 +149,13 @@ class CourseObj:
 		self.cid_to_vector[cid] = Vector.one_hot_repr(self.course_count, cid)
 		return self.get_course_vector(cid)
 
+	def get_course_bundle(
+			self,
+			cid_identifier: CID or SCourse or SCourseNumber) -> Tuple[CID, SCourseNumber, SCourse]:
+		cid = self.cid_resolver[cid_identifier]
+		cn, course = self.cid_to_course[cid]
+		return cid, cn, course
+
 
 class QuestionAnswerManager:
 	def __init__(self, qsid: QSID, msid: MSID) -> None:
@@ -161,6 +168,8 @@ class QuestionAnswerManager:
 		self.answer_to_vector_map: Dict[QID, Dict[AID, np.ndarray]] = None
 		self.question_dimension_map: Dict[QID, int] = None
 		self._input_dimension: int = None
+		self._qids: Set[QID] = None
+		self._aids: Set[Tuple[QID, AID]] = None
 		self.setup()
 
 	def setup(self) -> None:
@@ -169,6 +178,7 @@ class QuestionAnswerManager:
 		question_list, answer_map_list = [], {}
 		question_order, answer_order = {}, {}
 		aid_to_qid_map = {}
+		qids = set()
 		for qid_, question_, answers in database.load_question_set(self.qsid):
 			qid, question = QID(qid_), SQuestion(question_)
 			question_resolver[question] = qid
@@ -184,6 +194,7 @@ class QuestionAnswerManager:
 			for index, aid in enumerate(sorted(answer_map_list[qid])):
 				answer_order[qid][aid] = index
 			question_list.append(qid)
+			qids.add(qid)
 		for index, qid in enumerate(sorted(question_list)):
 			question_order[qid] = index
 
@@ -192,11 +203,13 @@ class QuestionAnswerManager:
 		self.question_order = question_order
 		self.answer_order = answer_order
 		self.aid_to_qid_map = aid_to_qid_map
+		self._qids = qids
 
 		# load variables from the mapping set id
 		answer_to_vector_map = {}
 		question_dimension_map = {}
 		input_dimension = 0
+		aids = set()
 		for qid_, aid_, vector_text in database.load_mapping_set(self.msid):
 			qid, aid = QID(qid_), AID(aid_)
 			vector = np.array([[int(el) for el in vector_text.split(',')]])
@@ -208,10 +221,12 @@ class QuestionAnswerManager:
 			assert question_dimension_map[qid] == vector.shape[1], \
 				"dimensions for the same qid don't match -> %s" % str(qid)
 			input_dimension += question_dimension_map[qid]
+			aids.add((qid, aid))
 
 		self.answer_to_vector_map = answer_to_vector_map
 		self.question_dimension_map = question_dimension_map
 		self._input_dimension = input_dimension
+		self._aids = aids
 
 	def question_index(self, q_identifier: QID or SQuestion) -> int:
 		return self.question_order[self.qid_resolver[q_identifier]]
@@ -230,6 +245,23 @@ class QuestionAnswerManager:
 	def answer_vector_from_aid(self, aid: AID) -> np.ndarray:
 		return self.answer_to_vector_map[self.aid_to_qid_map[aid]][aid]
 
+	def get_qid(self, qid_indentifier: QID or SQuestion) -> QID:
+		return self.qid_resolver[qid_indentifier]
+
+	def get_aid(
+			self,
+			qid_identifier: QID or SQuestion,
+			aid_identifier: AID or SChoice) -> AID:
+		return self.aid_resolver[self.get_qid(qid_identifier)][aid_identifier]
+
+	def question_ids(self) -> Iterable[QID]:
+		for qid in self._qids:
+			yield qid
+
+	def answer_ids(self) -> Iterable[Tuple[QID, AID]]:
+		for aid in self._aids:
+			yield aid
+
 	@property
 	def input_dimension(self) -> int:
 		return self._input_dimension
@@ -244,12 +276,14 @@ class DataParser:
 		self.qa_manager: QuestionAnswerManager = None
 		self.base_answer_vector: np.ndarray = None
 		self.answer_vector: np.ndarray = None
+		self.raw_responses: Dict[QID, AID] = None
 		self.setup()
 
 	def setup(self) -> None:
 		self.course_obj = CourseObj()
 		self.qa_manager = QuestionAnswerManager(self.qsid, self.msid)
 		self.base_answer_vector = np.zeros((1, self.input_dimension))
+		self.raw_responses = {qid: None for qid in self.qa_manager.question_ids()}
 		self.refresh_responses()
 
 	@property
@@ -262,11 +296,14 @@ class DataParser:
 
 	def set_answer(
 			self,
-			question_identifier: SQuestion or QID,
-			answer_identifier: SChoice or AID) -> None:
-		index = self.qa_manager.question_index(question_identifier)
-		vector = self.qa_manager.answer_vector(question_identifier, answer_identifier)
+			qid_identifier: SQuestion or QID,
+			aid_identifier: SChoice or AID) -> None:
+		index = self.qa_manager.question_index(qid_identifier)
+		vector = self.qa_manager.answer_vector(qid_identifier, aid_identifier)
 		self.answer_vector[:, index:index + vector.shape[1]] = vector
+		qid = self.qa_manager.get_qid(qid_identifier)
+		aid = self.qa_manager.get_aid(qid, aid_identifier)
+		self.raw_responses[qid] = aid
 
 	def refresh_responses(self) -> None:
 		self.answer_vector = self.base_answer_vector.copy()
@@ -284,7 +321,19 @@ class DataParser:
 		raise NotImplementedError
 
 	def store_responses(self, course: SCourse or CID = None) -> None:
-		raise NotImplementedError
+		course_bundle = None
+		if course is not None:
+			course_bundle = self.course_obj.get_course_bundle(course)
+		self.assert_all_questions_answered()
+		responses: List[Tuple[QID, AID]] = [
+			(qid, self.raw_responses[qid]) for qid in self.raw_responses
+		]
+		database.store_response_set(responses, self.qsid, course_bundle)
+
+	def assert_all_questions_answered(self):
+		for qid in self.raw_responses:
+			assert self.raw_responses.get(qid, None) is not None, \
+				'the answer with qid %s is not answered' % str(qid)
 
 	def __iter__(self) -> QID:
 		raise NotImplementedError

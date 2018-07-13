@@ -31,6 +31,7 @@ class TBLCol:
 	response_id = 'rid'
 	time_created = 'time_created'
 	course_id = 'cid'
+	response_salt = 'salt'
 
 
 class TableColumns:
@@ -88,7 +89,9 @@ class Responses(TableColumns):
 			TBLCol.response_id,
 			TBLCol.question_set_id,
 			TBLCol.course_number,
-			TBLCol.time_created
+			TBLCol.time_created,
+			TBLCol.course_id,
+			TBLCol.response_salt
 		)
 
 

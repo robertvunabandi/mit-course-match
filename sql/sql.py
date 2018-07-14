@@ -1,4 +1,5 @@
 import mysql.connector
+
 # connect to mysql database for MITCourseMatch
 # todo - add connection error checks here...
 config = {

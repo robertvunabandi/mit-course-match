@@ -409,7 +409,7 @@ class _DB:
 			TBL.ResponseMappings,
 			TBLCol.response_id, TBLCol.course_id, TBL.Responses,
 			TBLCol.question_set_id, str(qsid), TBLCol.course_id,
-			TBLCol.response_id,TBLCol.response_id,
+			TBLCol.response_id, TBLCol.response_id,
 		)
 		cursor.execute("""
 			SELECT a.%s, b.%s, a.%s, a.%s FROM 
@@ -420,8 +420,8 @@ class _DB:
 		""" % data)
 		data = {}
 		for rid, cid, qid, aid in cursor.fetchall():
-			data[(rid,cid)] = data.get(rid, {})
-			data[(rid,cid)][qid] = aid
+			data[(rid, cid)] = data.get(rid, {})
+			data[(rid, cid)][qid] = aid
 		return data
 
 	@staticmethod

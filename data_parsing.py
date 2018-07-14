@@ -202,7 +202,7 @@ class DataParser:
 	def refresh_responses(self) -> None:
 		self.answer_vector = self.base_answer_vector.copy()
 
-	def load_training_data(self) -> Tuple[np.ndarray, np.ndarray]:
+	def load_training_data(self) -> Tuple[np.ndarray, np.ndarray] or Tuple[None, None]:
 		"""
 		load the training data that matches self's qsid. this is data stored
 		in the db. this data are the labelled responses in the database. the
@@ -217,6 +217,8 @@ class DataParser:
 		for (rid, cid) in responses:
 			data.append(self.vector_from_responses(responses[(rid, cid)]))
 			labels.append(self.course_obj.get_course_vector(cid))
+		if len(data) == 0:
+			return None, None
 		return np.vstack(data), np.vstack(labels)
 
 	def vector_from_responses(self, response: Dict[QID, AID]) -> np.ndarray:
@@ -246,13 +248,10 @@ class DataParser:
 # ------------------------------------------------------------
 # ------------------------------------------------------------
 
-if __name__ == '__main__' and False:
+if __name__ == '__main__':
 	dp = DataParser(QSID(3), MSID(2))
-	# d = dp.load_training_data()
-	# print(dp.course_vector(SCourse('Biology')))
-	# print(dp.course_index(SCourse('Biology')))
-	# print(dp.qm.question_answers_for_question_id(qid))
-	# print(dp.store_answer(SCourse('Aeronautics and Astronautics')))
+	print(dp.answer_vector)
+	print(dp.input_dimension)
+	print(dp.output_dimension)
 	d, l = dp.load_training_data()
-	print(d)
-	print(l)
+	print(d, l)

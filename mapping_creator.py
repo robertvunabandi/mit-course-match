@@ -17,7 +17,7 @@ class QuestionAnswersToVectorMap:
 			question: SQuestion,
 			answers: List[Tuple[AID, SChoice]],
 			dimension: int = 1) -> None:
-		utils.assert_valid_db_id(qid, 'question_id')
+		utils.assert_valid_db_id(qid, QID.__name__)
 		QuestionAnswersToVectorMap.assert_valid_answer_input(answers)
 		QuestionAnswersToVectorMap.assert_valid_dimension(dimension)
 		self.qid = qid
@@ -130,7 +130,7 @@ class MappingSetCreator:
 	"""
 
 	def __init__(self, qsid: int, ms_name: str = None) -> None:
-		utils.assert_valid_db_id(qsid, 'QID')
+		utils.assert_valid_db_id(qsid, QSID.__name__)
 		self.qsid = QSID(qsid)
 		self.name = None
 		self.set_name(ms_name)

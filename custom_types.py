@@ -1,5 +1,6 @@
 import numpy as np
 from typing import Any
+import utils
 
 
 class Vector(np.ndarray):
@@ -64,34 +65,6 @@ class IntVectorList:
 
 class FloatVectorList:
 	element_types = {int, float}
-
-
-class MITCourse:
-	# NOTE - this is not used yet anywhere, so it can be safely deleted
-	def __init__(self, course_number: str, course_name: str) -> None:
-		self.number = course_number
-		self.name = course_name
-
-	def __str__(self) -> str:
-		return self.name
-
-	def __repr__(self) -> str:
-		return 'MITCourse::' + self.__str__()
-
-	def __hash__(self) -> int:
-		return hash(str(self.name))
-
-	def __lt__(self, other) -> bool:
-		return self.name < other.name
-
-	def __eq__(self, other) -> bool:
-		return self.name == other.name and self.number == other.number
-
-	def __le__(self, other) -> bool:
-		return self.__lt__(other) or self.__eq__(other)
-
-	def string(self) -> str:
-		return '%s, %s' % (self.number, self.name)
 
 
 class SpecialString(str):
@@ -205,23 +178,30 @@ class StringID(SpecialString):
 		return 'ID::' + super(StringID, self).__repr__()
 
 
+@utils.depreciated
 class QuestionID(StringID):
-
 	def __repr__(self):
 		return 'Question' + super(QuestionID, self).__repr__()
 
 
+@utils.depreciated
 class QuestionSetID(StringID):
 	def __repr__(self):
 		return 'QuestionSet' + super(QuestionSetID, self).__repr__()
 
 
+@utils.depreciated
 class MappingSetID(StringID):
 	def __repr__(self):
 		return 'MappingSet' + super(MappingSetID, self).__repr__()
 
 
+@utils.depreciated
 class AnswerSetID(StringID):
 	def __repr__(self):
 		return 'AnswerSet' + super(AnswerSetID, self).__repr__()
 
+
+if __name__ == '__main__':
+	a = AnswerSetID('4')
+	print(a)

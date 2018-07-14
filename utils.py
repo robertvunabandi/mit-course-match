@@ -12,6 +12,14 @@ LETTERS_ALPHABET = list('abcdefghijklmnopqrstuvwxyz')
 EXIT_PROMPT = '<Q>'
 
 
+def depreciated(func: Callable) -> Callable:
+	def method(*args, **kwargs):
+		print('Warning: this method is utilsdepreciated. Please, do not use it.')
+		return func(*args, **kwargs)
+
+	return method
+
+
 def _random_character(alphabet: List[str]) -> str:
 	return random.choice(alphabet)
 
@@ -40,28 +48,6 @@ def generate_mapping_set_extension() -> str:
 	return _generate_id(ALPHANUMERIC_ALPHABET, 4)
 
 
-def generate_question_set_id() -> str:
-	return _generate_id(DIGITS_ALPHABET, 3)
-
-
-def generate_question_id() -> str:
-	return _generate_id(ALPHANUMERIC_ALPHABET, 4)
-
-
-def generate_mapping_id() -> str:
-	return _generate_id(DIGITS_ALPHABET, 5)
-
-
-def generate_data_id() -> str:
-	"""
-	this allows us to save up to 2,176,782,336 data records for a given
-	question set id and mapping set id. We use 6 characters to reduce
-	the time it will take to find a unique id assuming we have
-	accumulated a lot of data
-	"""
-	return _generate_id(ALPHANUMERIC_ALPHABET, 6)
-
-
 def generate_unique_id(
 		existing_id_set: Set[str],
 		generator_method: Callable) -> str:
@@ -71,17 +57,10 @@ def generate_unique_id(
 	return new_id
 
 
-def get_data_format_path() -> str:
-	"""
-	todo: we should just move to store the data with a cnx, but that's too much a pain for now
-	"""
-	return '/' + __file__.strip('/utils.py') + '/data_format'
-
-
 class Color:
 	"""
 	color inputs to print on the console.
-	NOTE: that these aren't the true colors. These namings are aliases.
+	note that these aren't the true colors. These namings are aliases.
 	"""
 	PURPLE = '\033[95m'
 	BLUE = '\033[94m'

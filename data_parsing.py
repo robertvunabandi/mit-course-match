@@ -156,6 +156,9 @@ class CourseObj:
 		cn, course = self.cid_to_course[cid]
 		return cid, cn, course
 
+	def cid(self, cid_identifier: CID or SCourse or SCourseNumber) -> CID:
+		return self.cid_resolver[cid_identifier]
+
 
 class QuestionAnswerManager:
 	def __init__(self, qsid: QSID, msid: MSID) -> None:
@@ -316,7 +319,20 @@ class DataParser:
 		the conversion is done through using the mapping from self's msid.
 		:return: a tuple of data and label for that data
 		"""
-		raise NotImplementedError
+		responses: Dict[Tuple[RID, CID], Dict[QID, AID]] = \
+			database.load_responses(self.qsid)
+		data: List[np.ndarray] = []
+		labels: List[np.ndarray] = []
+		for (rid, cid) in responses:
+			data.append(self.vector_from_responses(responses[(rid, cid)]))
+			labels.append(self.course_obj.get_course_vector(cid))
+		return np.vstack(data), np.vstack(labels)
+
+	def vector_from_responses(self, response: Dict[QID, AID]) -> np.ndarray:
+		self.refresh_responses()
+		for qid in response:
+			self.set_answer(qid, response[qid])
+		return self.answer_vector.copy()
 
 	def store_responses(self, course: SCourse or CID = None) -> None:
 		course_bundle = None

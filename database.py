@@ -1,9 +1,9 @@
 import utils
 from sql.sql import cursor, cnx
 from sql.sql_constants import TBL, TBLCol
-from typing import List, Callable, Tuple, Set
+from typing import List, Callable, Tuple, Set, Dict
 from custom_types import \
-	SChoice, SQuestion, SCourseNumber, SCourse, QID, AID, CID, MSID, QSID
+	SChoice, SQuestion, SCourseNumber, SCourse, QID, AID, CID, RID, MSID, QSID
 
 
 # todo - add ways to prevent sql injections
@@ -402,6 +402,29 @@ class _DB:
 		return cursor.fetchall()
 
 	@staticmethod
+	def load_responses(qsid: QSID) -> Dict[Tuple[RID, CID], Dict[QID, AID]]:
+		data = (
+			TBLCol.response_id, TBLCol.course_id,
+			TBLCol.question_id, TBLCol.answer_id,
+			TBL.ResponseMappings,
+			TBLCol.response_id, TBLCol.course_id, TBL.Responses,
+			TBLCol.question_set_id, str(qsid), TBLCol.course_id,
+			TBLCol.response_id,TBLCol.response_id,
+		)
+		cursor.execute("""
+			SELECT a.%s, b.%s, a.%s, a.%s FROM 
+			%s a JOIN (
+				SELECT %s, %s FROM %s 
+				WHERE %s = %s AND %s IS NOT NULL
+			) b ON a.%s = b.%s
+		""" % data)
+		data = {}
+		for rid, cid, qid, aid in cursor.fetchall():
+			data[(rid,cid)] = data.get(rid, {})
+			data[(rid,cid)][qid] = aid
+		return data
+
+	@staticmethod
 	def load_courses():
 		data = (
 			TBLCol.course_number,
@@ -420,6 +443,7 @@ load_mapping_set = _DB.load_mapping_set
 store_mapping_set = _DB.store_mapping_set
 load_courses = _DB.load_courses
 store_response_set = _DB.store_response_set
+load_responses = _DB.load_responses
 
 if __name__ == '__main__':
 	# cursor.execute('SELECT * FROM Questions WHERE question = \'coffee?\';')
@@ -429,14 +453,3 @@ if __name__ == '__main__':
 	# print(cursor.fetchall())
 	# print(_DB.answer_choices_for_question('coffee?'))
 	print(_DB.load_mapping_set(MSID(2)))
-
-# todo - Methods to build:
-# get a list of courses
-# get stored responses from the db, add count parameter
-# questions from a question set by qsid or qs_name
-# get the number of labelled responses
-# get the number of responses in the db
-# get all responses from a given question set
-# get all the choices to a given question or data about it
-# deleting methods: question, question_set, answer_mapping, responses
-# todo - add a response token, which the owner can use to delete their response

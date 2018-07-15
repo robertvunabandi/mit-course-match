@@ -66,6 +66,27 @@ class Classifier:
 			metrics=['accuracy']
 		)
 
+		self.train()
+
+	def train(
+			self,
+			epochs: int = 5,
+			batch_size: int = 32,
+			verbose_mode: int = 1) -> None:
+		"""
+		train the _classifier based on the data that we currently have
+		"""
+		if self.data is None:
+			self.data, self.label = self.data_manager.load_training_data()
+		if self.data is not None and self.label is not None:
+			self._classifier.fit(
+				self.data,
+				self.label,
+				epochs=epochs,
+				batch_size=batch_size,
+				verbose=verbose_mode
+			)
+
 	def store_training_data(
 			self,
 			answer_map: Dict[QID or SQuestion, AID or SChoice],
@@ -149,24 +170,6 @@ class Classifier:
 			as can be seen in DataParser
 		"""
 		return self._classifier.predict(answer_vector, verbose=verbose)
-
-	def train(
-			self,
-			epochs: int = 5,
-			batch_size: int = 32,
-			verbose_mode: int = 1) -> None:
-		"""
-		train the _classifier based on the data that we currently have
-		"""
-		if self.data is None:
-			self.data, self.label = self.data_manager.load_training_data()
-		self._classifier.fit(
-			self.data,
-			self.label,
-			epochs=epochs,
-			batch_size=batch_size,
-			verbose=verbose_mode
-		)
 
 
 if __name__ == '__main__':

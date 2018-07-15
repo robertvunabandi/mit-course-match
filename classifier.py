@@ -2,6 +2,7 @@ import os
 import utils
 import numpy as np
 from typing import List, Tuple, Any, Dict
+import database
 from custom_types import \
 	RowVector, QuestionSetID, QuestionID, MappingSetID, AnswerSetID, \
 	SChoice, SQuestion, SCourseNumber, SCourse, QID, AID, RID, CID, QSID, MSID
@@ -20,11 +21,11 @@ class Classifier:
 
 	def __init__(
 			self,
-			qsid: QSID,
-			msid: MSID,
+			qsid: QSID or int,
+			msid: MSID or int,
 			nn_hidden_layers=((100, relu), (50, relu))) -> None:
-		self.qsid = qsid
-		self.msid = msid
+		self.qsid = QSID(qsid)
+		self.msid = MSID(msid)
 		self.data_manager = DataManager(self.qsid, self.msid)
 		self.data = None
 		self._classifier = None
@@ -33,7 +34,7 @@ class Classifier:
 	def setup_classifier(
 			self,
 			nn_hidden_layers: Tuple[Tuple[int, str or Any], ...]
-			) -> None:
+	) -> None:
 		"""
 		setup the _classifier by adding all given hidden layers and using
 		input dim and output dim from self.data_manager
@@ -65,8 +66,6 @@ class Classifier:
 			optimizer=Adam(),
 			metrics=['accuracy']
 		)
-
-		self.train()
 
 	def train(
 			self,
@@ -102,80 +101,40 @@ class Classifier:
 		self.data_manager.store_responses(cid_identifier)
 		self.data_manager.refresh_responses()
 
-	def predict_course_from_rid(
+	def predict_from_rid(
 			self,
 			rid: RID) -> List[Tuple[SCourseNumber, SCourse, float]]:
-		# load the response
-		# run through classifier to predict (ensure classifier is trained)
-		# then rank the output
-		pass
-
-	def predict_ranking_from_data_file(
-			self,
-			data_id: AnswerSetID,
-			verbose: int = 0) -> List[Tuple[SCourseNumber, SCourse, float]]:
-		"""
-		returns an ordered list of predicted courses, ranging from
-		best course prediction to worst
-		"""
-		return self.data_manager.get_course_rankings(
-			self.predict_from_data_file(data_id, verbose)
-		)
-
-	def predict_from_data_file(
-			self,
-			data_id: AnswerSetID,
-			verbose: int = 0) -> RowVector:
-		"""
-		see Classifier.predict
-		"""
-		vector, _ = self.data_manager.load_specific_training_data(data_id)
-		return self.predict(vector, verbose=verbose)
-
-	def answer_map_to_vector(
-			self,
-			answer_map: Dict[QuestionID, SAnswer]) -> RowVector:
-		"""
-		see Classifier.predict
-		Note:
-			this will throw an error if some key in the dictionary
-			are missing. That is intentional.
-		"""
-		for question_id in self.data_manager:
-			self.data_manager.set_answer(question_id, answer_map[question_id])
-		return self.data_manager.get_answer_vector()
+		response: Dict[QID, AID] = database.load_response(rid)
+		vector: np.ndarray = self.data_manager.vector_from_responses(response)
+		return self.predict_ranking(vector)
 
 	def predict_ranking(
 			self,
-			answer_vector: RowVector,
+			vector: np.ndarray,
 			verbose: int = 0) -> List[Tuple[SCourseNumber, SCourse, float]]:
 		"""
 		returns an ordered list of predicted courses, ranging from
 		best course prediction to worst
+		:param vector: A vector that has the shape (1, self.data_manager.input_dimension)
+		:param verbose: the verbosity level when making the prediction
+		:return:
 		"""
-		return self.data_manager.get_course_rankings(
-			self.predict(answer_vector, verbose)
+		return self.get_course_rankings(
+			self._classifier.predict(vector, verbose=verbose)
 		)
 
-	def predict(self, answer_vector: RowVector, verbose: int = 0) -> RowVector:
-		"""
-		outputs a dictionary that maps the probabilities of each major
-		based on these choices
-		:param answer_vector:
-			a numpy column vector
-		:param course:
-			the actual course for this answer_vector. this will mostly be none
-		:return:
-			a ColumnVector that represent the probability for various courses
-			as can be seen in DataParser
-		"""
-		return self._classifier.predict(answer_vector, verbose=verbose)
+	def get_course_rankings(
+			self,
+			prediction: np.ndarray) -> List[Tuple[SCourseNumber, SCourse, float]]:
+		# todo - implement this after learning what prediction looks like
+		print(prediction)
+		raise NotImplementedError
 
 
 if __name__ == '__main__':
-	a = Classifier(QuestionSetID('314'), MappingSetID('35780'))
+	a = Classifier(QSID(3), MSID(2))
 	a.train(verbose_mode=0)
-	prediction = a.predict_ranking_from_data_file(AnswerSetID('p68n6s'))
+	prediction = a.predict_from_rid(RID(1))
 	courses = ','.join([str(tuple(repr(e) for e in p[:-1])) for p in prediction])
 	print(courses)
 	for p in prediction:

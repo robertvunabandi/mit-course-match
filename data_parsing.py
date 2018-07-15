@@ -210,7 +210,7 @@ class DataManager:
 		:return: a tuple of data and label for that data
 		"""
 		responses: Dict[Tuple[RID, CID], Dict[QID, AID]] = \
-			database.load_responses(self.qsid)
+			database.load_question_set_responses(self.qsid)
 		data: List[np.ndarray] = []
 		labels: List[np.ndarray] = []
 		for (rid, cid) in responses:
@@ -220,10 +220,12 @@ class DataManager:
 			return None, None
 		return np.vstack(data), np.vstack(labels)
 
-	def vector_from_responses(self, response: Dict[QID, AID]) -> np.ndarray:
+	def vector_from_responses(
+			self,
+			response: Dict[QID or SQuestion, AID or SChoice]) -> np.ndarray:
 		self.refresh_responses()
-		for qid in response:
-			self.set_answer(qid, response[qid])
+		for qid_identifier in response:
+			self.set_answer(qid_identifier, response[qid_identifier])
 		vector = self.answer_vector.copy()
 		self.refresh_responses()
 		return vector

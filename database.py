@@ -402,7 +402,7 @@ class _DB:
 		return cursor.fetchall()
 
 	@staticmethod
-	def load_responses(qsid: QSID) -> Dict[Tuple[RID, CID], Dict[QID, AID]]:
+	def load_question_set_responses(qsid: QSID) -> Dict[Tuple[RID, CID], Dict[QID, AID]]:
 		data = (
 			TBLCol.response_id, TBLCol.course_id,
 			TBLCol.question_id, TBLCol.answer_id,
@@ -425,6 +425,11 @@ class _DB:
 		return data
 
 	@staticmethod
+	def load_response(rid: RID) -> Dict[QID, AID]:
+		# todo - implement this method
+		raise NotImplementedError
+
+	@staticmethod
 	def load_courses():
 		data = (
 			TBLCol.course_number,
@@ -443,7 +448,8 @@ load_mapping_set = _DB.load_mapping_set
 store_mapping_set = _DB.store_mapping_set
 load_courses = _DB.load_courses
 store_response_set = _DB.store_response_set
-load_responses = _DB.load_responses
+load_question_set_responses = _DB.load_question_set_responses
+load_response = _DB.load_response
 
 if __name__ == '__main__':
 	# cursor.execute('SELECT * FROM Questions WHERE question = \'coffee?\';')

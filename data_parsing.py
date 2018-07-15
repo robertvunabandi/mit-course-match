@@ -14,21 +14,26 @@ from custom_types import \
 class CourseObj:
 	def __init__(self) -> None:
 		self.cid_to_course: Dict[CID, Tuple[SCourseNumber, SCourse]] = None
+		self.cid_to_index: Dict[CID, int] = None
 		self.cid_resolver: Dict[CID or SCourse or SCourseNumber, CID] = None
 		self.cid_to_vector: Dict[CID, np.ndarray] = {}
 		self.course_count: int = None
 		self.setup()
 
 	def setup(self) -> None:
-		cid_to_course, cid_resolver, course_count = {}, {}, 0
+		cid_to_course, cid_resolver, cids = {}, {}, []
 		for cn, course_name, cid in database.load_courses():
 			cid_to_course[CID(cid)] = (SCourseNumber(cn), SCourse(course_name))
 			cid_resolver[CID(cid)] = CID(cid)
 			cid_resolver[SCourse(course_name)] = CID(cid)
 			cid_resolver[SCourseNumber(cn)] = cid
-			course_count += 1
+			cids.append(cid)
 		self.cid_to_course, self.cid_resolver = cid_to_course, cid_resolver
-		self.course_count = course_count
+		cid_to_index = {}
+		for index, cid in enumerate(sorted(cids)):
+			cid_to_index[cid] = index
+		self.cid_to_index = cid_to_index
+		self.course_count = len(cids)
 
 	def get_course_vector(
 			self,
@@ -36,7 +41,8 @@ class CourseObj:
 		cid = self.cid_resolver[course_identifier]
 		if cid in self.cid_to_vector:
 			return self.cid_to_vector[cid]
-		self.cid_to_vector[cid] = Vector.one_hot_repr(self.course_count, cid)
+		course_index = self.cid_to_index[cid]
+		self.cid_to_vector[cid] = Vector.one_hot_repr(self.course_count, course_index)
 		return self.get_course_vector(cid)
 
 	def get_course_bundle(
@@ -46,8 +52,17 @@ class CourseObj:
 		cn, course = self.cid_to_course[cid]
 		return cid, cn, course
 
+	def get_course_index(
+			self,
+			cid_identifier: CID or SCourse or SCourseNumber) -> int:
+		return self.cid_to_index[self.cid_resolver[cid_identifier]]
+
 	def cid(self, cid_identifier: CID or SCourse or SCourseNumber) -> CID:
 		return self.cid_resolver[cid_identifier]
+
+	def course_ids(self) -> CID:
+		for cid in self.cid_to_course:
+			yield cid
 
 
 class QuestionAnswerManager:
@@ -56,6 +71,7 @@ class QuestionAnswerManager:
 		self.qid_resolver: Dict[QID or SQuestion, QID] = None
 		self.aid_resolver: Dict[QID, Dict[AID or SChoice, AID]] = None
 		self.question_order: Dict[QID, int] = None
+		self.question_index_in_answer_vector: Dict[QID, int] = None
 		self.answer_order: Dict[QID, Dict[AID, int]] = None
 		self.aid_to_qid_map: Dict[AID, QID] = None
 		self.answer_to_vector_map: Dict[QID, Dict[AID, np.ndarray]] = None
@@ -78,8 +94,7 @@ class QuestionAnswerManager:
 			question_resolver[qid] = qid
 			answer_resolver[qid] = {}
 			answer_map_list[qid], answer_order[qid] = [], {}
-			for aid_, choice_ in answers:
-				aid, choice = AID(aid_), SChoice(choice_)
+			for aid, choice in answers:
 				answer_resolver[qid][choice] = aid
 				answer_resolver[qid][aid] = aid
 				answer_map_list[qid].append(choice)
@@ -101,10 +116,9 @@ class QuestionAnswerManager:
 		# load variables from the mapping set id
 		answer_to_vector_map = {}
 		question_dimension_map = {}
-		input_dimension = 0
+		input_dimension_contributions = {}
 		aids = set()
-		for qid_, aid_, vector_text in database.load_mapping_set(self.msid):
-			qid, aid = QID(qid_), AID(aid_)
+		for qid, aid, vector_text in database.load_mapping_set(self.msid):
 			vector = np.array([[int(el) for el in vector_text.split(',')]])
 			question_dimension_map[qid] = question_dimension_map.get(qid, None)
 			answer_to_vector_map[qid] = answer_to_vector_map.get(qid, {})
@@ -113,16 +127,38 @@ class QuestionAnswerManager:
 				question_dimension_map[qid] = vector.shape[1]
 			assert question_dimension_map[qid] == vector.shape[1], \
 				"dimensions for the same qid don't match -> %s" % str(qid)
-			input_dimension += question_dimension_map[qid]
+			input_dimension_contributions[qid] = question_dimension_map[qid]
 			aids.add((qid, aid))
+
+		# find the index of each question in the vector
+		# this is going to be a bit obscure
+		question_index_in_answer_vector = {}
+		ordered_qids_by_index = sorted(
+			[(qid, question_order[qid]) for qid in question_order],
+			key=lambda tup: tup[1]
+		)
+		for qid, index in ordered_qids_by_index:
+			if index == 0:
+				continue
+			prev_qid = ordered_qids_by_index[index-1][0]
+			prev_qid_dim = input_dimension_contributions[prev_qid]
+			# this will only apply to the very first element, which
+			# automatically will then get the index 0 as needed
+			question_index_in_answer_vector[prev_qid] = \
+				question_index_in_answer_vector.get(prev_qid, 0)
+			question_index_in_answer_vector[qid] = \
+				question_index_in_answer_vector[prev_qid] + prev_qid_dim
 
 		self.answer_to_vector_map = answer_to_vector_map
 		self.question_dimension_map = question_dimension_map
-		self._input_dimension = input_dimension
+		self.question_index_in_answer_vector = question_index_in_answer_vector
+		self._input_dimension = sum(input_dimension_contributions.values())
 		self._aids = aids
 
 	def question_index(self, q_identifier: QID or SQuestion) -> int:
-		return self.question_order[self.qid_resolver[q_identifier]]
+		return self.question_index_in_answer_vector[
+			self.qid_resolver[q_identifier]
+		]
 
 	def question_dimension(self, q_identifier: QID or SQuestion) -> int:
 		return self.question_dimension_map[self.qid_resolver[q_identifier]]
@@ -247,6 +283,14 @@ class DataManager:
 			assert self.raw_responses.get(qid, None) is not None, \
 				'the answer with qid %s is not answered' % str(qid)
 
+	def question_ids(self) -> Iterable[QID]:
+		yield from self.qa_manager.question_ids()
+
+	def answer_ids(self) -> Iterable[AID]:
+		yield from self.qa_manager.answer_ids()
+
+	def course_ids(self) -> Iterable[CID]:
+		yield from self.course_obj.course_ids()
 
 # ------------------------------------------------------------
 # ------------------------------------------------------------

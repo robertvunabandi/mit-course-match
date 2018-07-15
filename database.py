@@ -6,8 +6,8 @@ from custom_types import \
 	SChoice, SQuestion, SCourseNumber, SCourse, QID, AID, CID, RID, MSID, QSID
 
 
-# todo - add ways to prevent sql injections
-# todo - add method to create the tables from scratch (if not exists)
+# todo - add ways to prevent sql injections, so sanitize inputs
+
 # 		 so that online migration is easy
 def _commit(method: Callable) -> Callable:
 	"""
@@ -24,6 +24,13 @@ def _commit(method: Callable) -> Callable:
 		return out
 
 	return wrapper
+
+
+@_commit
+def initialize_database() -> None:
+	# todo - add method to create the tables from scratch (if not exists)
+	# when testing, deactivate the @_commit decorator
+	raise NotImplementedError
 
 
 class _DB:
@@ -59,8 +66,8 @@ class _DB:
 				TBLCol.course_number,
 				TBLCol.course_id,
 				str(qsid),
-				response_salt,
-				cn,
+				utils.quote(response_salt),
+				utils.quote(cn),
 				str(cid)
 			)
 			query = "INSERT INTO %s (%s, %s, %s, %s) VALUES (%s, %s, %s, %s)"
@@ -126,7 +133,7 @@ class _DB:
 	@_commit
 	def store_question_set(
 			question_set: List[Tuple[str, List[str]]],
-			qs_name: str = None) -> None:
+			qs_name: str = None) -> List[Tuple[Tuple[str, str], Exception]]:
 		qs_name = _DB.create_or_make_qs_name_unique(qs_name)
 		# create the question set
 		data = (TBL.QuestionSets, TBLCol.question_set_name, qs_name)
@@ -191,7 +198,7 @@ class _DB:
 	@staticmethod
 	def get_all_response_salts() -> Set[str]:
 		data = (TBLCol.response_salt, TBL.Responses)
-		cursor.execute('SLECT %s FROM %s', data)
+		cursor.execute('SELECT %s FROM %s' % data)
 		return set(el[0] for el in cursor.fetchall())
 
 	@staticmethod
@@ -432,7 +439,7 @@ class _DB:
 		data = (
 			TBLCol.question_id,
 			TBLCol.answer_id,
-			TBL.QuestionMappings,
+			TBL.ResponseMappings,
 			TBLCol.response_id,
 			str(rid)
 		)

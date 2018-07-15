@@ -128,10 +128,37 @@ class Classifier:
 
 	def get_course_rankings(
 			self,
-			prediction: np.ndarray) -> List[Tuple[SCourseNumber, SCourse, float]]:
-		# todo - implement this after learning what prediction looks like
-		print(prediction)
-		raise NotImplementedError
+			predictions: np.ndarray) -> List[Tuple[SCourseNumber, SCourse, float]]:
+		prediction_tuples = [
+			(
+				cid,
+				predictions[0, self.data_manager.course_obj.get_course_index(cid)]
+			) for cid in list(self.data_manager.course_ids())
+		]
+		courses_sorted_by_probability = sorted(
+			prediction_tuples,
+			key=lambda tup: -tup[1]
+		)
+		ranking = []
+		for cid, probability in courses_sorted_by_probability:
+			cid, cn, course = self.data_manager.course_obj.get_course_bundle(cid)
+			ranking.append((cn, course, probability))
+		return ranking
+
+import random
+def store_dummy_responses(count = 100):
+	qids = [31, 32]
+	aids = {31: [36,37], 32: [38, 39]}
+	cl = Classifier(QSID(3), MSID(2))
+	print(list(cl.data_manager.course_ids()))
+	for i in range(count):
+		response = {}
+		for qid in qids:
+			response[qid] = random.choice(aids[qid])
+		cl.store_training_data(
+			response,
+			random.choice(list(cl.data_manager.course_ids()))
+		)
 
 
 if __name__ == '__main__':

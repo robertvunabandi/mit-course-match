@@ -4,12 +4,13 @@ import numpy as np
 from typing import List, Tuple, Any, Dict
 from custom_types import \
 	RowVector, QuestionSetID, QuestionID, MappingSetID, AnswerSetID, \
-	SAnswer, SCourse, SCourseNumber
-from data_parsing import DataParser
+	SChoice, SQuestion, SCourseNumber, SCourse, QID, AID, RID, CID, QSID, MSID
+from data_parsing import DataManager
 # for machine learning
 from keras.models import Sequential
 from keras.layers import Dense
-from keras.optimizers import Adam
+from keras.optimizers import Adam, SGD
+from keras.activations import relu, softmax
 
 
 class Classifier:
@@ -19,69 +20,74 @@ class Classifier:
 
 	def __init__(
 			self,
-			question_set_id: QuestionSetID,
-			mapping_set_id: MappingSetID) -> None:
-		self.qsid = question_set_id
-		self.msid = mapping_set_id
-		self.parser = DataParser(self.qsid, self.msid)
+			qsid: QSID,
+			msid: MSID,
+			nn_hidden_layers=((100, relu), (50, relu))) -> None:
+		self.qsid = qsid
+		self.msid = msid
+		self.data_manager = DataManager(self.qsid, self.msid)
 		self.data = None
-		self.classifier = None
-		self.setup_classifier(
-			nn_layer_units=((100, 'relu'), (50, 'relu')),
-			optimizer=Adam()
-		)
+		self._classifier = None
+		self.setup_classifier(nn_hidden_layers=nn_hidden_layers)
 
 	def setup_classifier(
 			self,
-			nn_layer_units: Tuple[Tuple[int, str], ...] = ((100, 'relu'),),
-			optimizer: Any = 'sgd') -> None:
+			nn_hidden_layers: Tuple[Tuple[int, str or Any], ...]
+			) -> None:
 		"""
-		setup the classifier by adding all given hidden layers and using
-		input dim and output dim from self.parser
-		:param nn_layer_units:
+		setup the _classifier by adding all given hidden layers and using
+		input dim and output dim from self.data_manager
+		:param nn_hidden_layers:
 			A tuple containing a sequence of tuples each containing an int
 			that specifies the number of hidden units and a string that
 			specifies the activation to use
-		:param optimizer:
-			optimization method for NN
 		"""
-		first_hidden_layer_unit_count, activation = nn_layer_units[0]
-		self.classifier = Sequential()
-		self.classifier.add(Dense(
+		first_hidden_layer_unit_count, activation = nn_hidden_layers[0]
+		self._classifier = Sequential()
+
+		self._classifier.add(Dense(
 			units=first_hidden_layer_unit_count,
 			activation=activation,
-			input_dim=self.parser.input_dimension())
-		)
-		# add all the hidden layers, then ha
-		for hidden_layer_unit_count, activation in nn_layer_units[1:]:
-			self.classifier.add(Dense(
+			input_dim=self.data_manager.input_dimension
+		))
+		for hidden_layer_unit_count, activation in nn_hidden_layers[1:]:
+			self._classifier.add(Dense(
 				units=hidden_layer_unit_count,
 				activation=activation
 			))
-		self.classifier.add(Dense(
-			units=self.parser.output_dimension(),
-			activation='softmax')
-		)
-		self.classifier.compile(
+		self._classifier.add(Dense(
+			units=self.data_manager.output_dimension,
+			activation=softmax
+		))
+
+		self._classifier.compile(
 			loss='categorical_crossentropy',
-			optimizer=optimizer,
+			optimizer=Adam(),
 			metrics=['accuracy']
 		)
 
 	def store_training_data(
 			self,
-			answer_map: Dict[QuestionID, SAnswer],
-			course: SCourse) -> None:
+			answer_map: Dict[QID or SQuestion, AID or SChoice],
+			cid_identifier: SCourse or CID or SCourseNumber = None) -> None:
 		"""
 		Store the training data labeled with this course number
 		Note:
 			this will throw an error if some key in the dictionary
 			are missing. That is intentional.
 		"""
-		for question_id in self.parser:
-			self.parser.set_answer(question_id, answer_map[question_id])
-		self.parser.store_answer(course)
-		self.parser.refresh_answer()
+		for qid in self.data_manager.qa_manager.question_ids():
+			self.data_manager.set_answer(qid, answer_map[qid])
+		self.data_manager.store_responses(cid_identifier)
+		self.data_manager.refresh_responses()
+
+	def predict_course_from_rid(
+			self,
+			rid: RID) -> List[Tuple[SCourseNumber, SCourse, float]]:
+		# load the response
+		# run through classifier to predict (ensure classifier is trained)
+		# then rank the output
+		pass
 
 	def predict_ranking_from_data_file(
 			self,
@@ -91,7 +97,7 @@ class Classifier:
 		returns an ordered list of predicted courses, ranging from
 		best course prediction to worst
 		"""
-		return self.parser.get_course_rankings(
+		return self.data_manager.get_course_rankings(
 			self.predict_from_data_file(data_id, verbose)
 		)
 
@@ -102,7 +108,7 @@ class Classifier:
 		"""
 		see Classifier.predict
 		"""
-		vector, _ = self.parser.load_specific_training_data(data_id)
+		vector, _ = self.data_manager.load_specific_training_data(data_id)
 		return self.predict(vector, verbose=verbose)
 
 	def answer_map_to_vector(
@@ -114,9 +120,9 @@ class Classifier:
 			this will throw an error if some key in the dictionary
 			are missing. That is intentional.
 		"""
-		for question_id in self.parser:
-			self.parser.set_answer(question_id, answer_map[question_id])
-		return self.parser.get_answer_vector()
+		for question_id in self.data_manager:
+			self.data_manager.set_answer(question_id, answer_map[question_id])
+		return self.data_manager.get_answer_vector()
 
 	def predict_ranking(
 			self,
@@ -126,7 +132,7 @@ class Classifier:
 		returns an ordered list of predicted courses, ranging from
 		best course prediction to worst
 		"""
-		return self.parser.get_course_rankings(
+		return self.data_manager.get_course_rankings(
 			self.predict(answer_vector, verbose)
 		)
 
@@ -142,7 +148,7 @@ class Classifier:
 			a ColumnVector that represent the probability for various courses
 			as can be seen in DataParser
 		"""
-		return self.classifier.predict(answer_vector, verbose=verbose)
+		return self._classifier.predict(answer_vector, verbose=verbose)
 
 	def train(
 			self,
@@ -150,11 +156,11 @@ class Classifier:
 			batch_size: int = 32,
 			verbose_mode: int = 1) -> None:
 		"""
-		train the classifier based on the data that we currently have
+		train the _classifier based on the data that we currently have
 		"""
 		if self.data is None:
-			self.data, self.label = self.parser.load_training_data()
-		self.classifier.fit(
+			self.data, self.label = self.data_manager.load_training_data()
+		self._classifier.fit(
 			self.data,
 			self.label,
 			epochs=epochs,

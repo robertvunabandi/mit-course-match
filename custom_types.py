@@ -129,10 +129,6 @@ class SCourseNumber(SpecialString):
 	pass
 
 
-class SAnswer(SpecialString):
-	pass
-
-
 """
 The following classes are IDs. Their string representation is different.
 """

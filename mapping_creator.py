@@ -126,7 +126,7 @@ class MappingSetCreator:
 	class to create mappings for question sets that are already created.
 	essentially, for each question in the question set, we map each of the
 	choices to that questions to its own specific vector, which will
-	eventually be used in the classifier.
+	eventually be used in the _classifier.
 	"""
 
 	def __init__(self, qsid: int, ms_name: str = None) -> None:

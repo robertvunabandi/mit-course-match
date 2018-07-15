@@ -160,7 +160,7 @@ class QuestionAnswerManager:
 		return self._input_dimension
 
 
-class DataParser:
+class DataManager:
 	def __init__(self, qsid: QSID, msid: MSID) -> None:
 		utils.assert_valid_db_id(qsid, QSID.__name__)
 		utils.assert_valid_db_id(msid, MSID.__name__)
@@ -205,7 +205,7 @@ class DataParser:
 		"""
 		load the training data that matches self's qsid. this is data stored
 		in the db. this data are the labelled responses in the database. the
-		data is directly converted to vectors to be used in the classifier.
+		data is directly converted to vectors to be used in the _classifier.
 		the conversion is done through using the mapping from self's msid.
 		:return: a tuple of data and label for that data
 		"""
@@ -228,10 +228,12 @@ class DataParser:
 		self.refresh_responses()
 		return vector
 
-	def store_responses(self, course: SCourse or CID = None) -> None:
+	def store_responses(
+			self,
+			cid_identifier: SCourse or CID or SCourseNumber = None) -> None:
 		course_bundle = None
-		if course is not None:
-			course_bundle = self.course_obj.get_course_bundle(course)
+		if cid_identifier is not None:
+			course_bundle = self.course_obj.get_course_bundle(cid_identifier)
 		self.assert_all_questions_answered()
 		responses: List[Tuple[QID, AID]] = [
 			(qid, self.raw_responses[qid]) for qid in self.raw_responses
@@ -248,7 +250,7 @@ class DataParser:
 # ------------------------------------------------------------
 
 if __name__ == '__main__':
-	dp = DataParser(QSID(3), MSID(2))
+	dp = DataManager(QSID(3), MSID(2))
 	print(dp.answer_vector)
 	print(dp.input_dimension)
 	print(dp.output_dimension)

@@ -2,6 +2,7 @@ import numpy as np
 from typing import Any
 import utils
 
+
 # todo - create an error object and use it when reporting errors from the database
 
 class Vector(np.ndarray):
@@ -40,16 +41,6 @@ class Vector(np.ndarray):
 
 	def __instancecheck__(self, instance):
 		return isinstance(instance, np.ndarray)
-
-
-class ColumnVector(Vector):
-	def __instancecheck__(self, instance: Any) -> bool:
-		return Vector.is_col_vector(instance)
-
-
-class RowVector(Vector):
-	def __instancecheck__(self, instance: Any) -> bool:
-		return Vector.is_row_vector(instance)
 
 
 class IntVectorList:
@@ -92,6 +83,47 @@ class SpecialString(str):
 		return str(self)
 
 
+"""
+The following classes are just strings. We add the "S" prefix to indicate that
+they are just strings.
+"""
+
+
+class SQSName(SpecialString):
+	def __repr__(self):
+		return 'QuestionSetName:' + super(SQSName, self).__repr__()
+
+
+class SMSName(SpecialString):
+	def __repr__(self):
+		return 'MappingSetName:' + super(SMSName, self).__repr__()
+
+
+class SQuestion(SpecialString):
+	def __repr__(self):
+		return 'Question:' + super(SQuestion, self).__repr__()
+
+
+class SCourse(SpecialString):
+	def __repr__(self):
+		return 'Course:' + super(SCourse, self).__repr__()
+
+
+class SChoice(SpecialString):
+	def __repr__(self):
+		return 'AnswerChoice:' + super(SChoice, self).__repr__()
+
+
+class SCourseNumber(SpecialString):
+	def __repr__(self):
+		return 'CourseNumber:' + super(SCourseNumber, self).__repr__()
+
+
+"""
+The following classes are IDs. Their string representation is different.
+"""
+
+
 class SpecialInt(int):
 	""" see SpecialString: this has the same property. """
 
@@ -100,44 +132,9 @@ class SpecialInt(int):
 		return obj
 
 
-"""
-The following classes are just strings. We add the "S" prefix to indicate that
-they are just strings.
-"""
-
-
-class SQSName(SpecialString):
-	pass
-
-
-class SMSName(SpecialString):
-	pass
-
-
-class SQuestion(SpecialString):
-	pass
-
-
-class SCourse(SpecialString):
-	pass
-
-
-class SChoice(SpecialString):
-	pass
-
-
-class SCourseNumber(SpecialString):
-	pass
-
-
-"""
-The following classes are IDs. Their string representation is different.
-"""
-
-
 class IntID(SpecialInt):
 	def __repr__(self):
-		return 'ID::' + super(IntID, self).__repr__()
+		return 'ID:' + super(IntID, self).__repr__()
 
 
 class QID(IntID):
@@ -168,37 +165,3 @@ class CID(IntID):
 class MSID(IntID):
 	def __repr__(self):
 		return 'MS' + super(MSID, self).__repr__()
-
-
-class StringID(SpecialString):
-	def __repr__(self):
-		return 'ID::' + super(StringID, self).__repr__()
-
-
-@utils.depreciated
-class QuestionID(StringID):
-	def __repr__(self):
-		return 'Question' + super(QuestionID, self).__repr__()
-
-
-@utils.depreciated
-class QuestionSetID(StringID):
-	def __repr__(self):
-		return 'QuestionSet' + super(QuestionSetID, self).__repr__()
-
-
-@utils.depreciated
-class MappingSetID(StringID):
-	def __repr__(self):
-		return 'MappingSet' + super(MappingSetID, self).__repr__()
-
-
-@utils.depreciated
-class AnswerSetID(StringID):
-	def __repr__(self):
-		return 'AnswerSet' + super(AnswerSetID, self).__repr__()
-
-
-if __name__ == '__main__':
-	a = AnswerSetID('4')
-	print(a)

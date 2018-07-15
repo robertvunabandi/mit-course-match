@@ -4,7 +4,6 @@ import numpy as np
 from typing import List, Tuple, Any, Dict
 import database
 from custom_types import \
-	RowVector, QuestionSetID, QuestionID, MappingSetID, AnswerSetID, \
 	SChoice, SQuestion, SCourseNumber, SCourse, QID, AID, RID, CID, QSID, MSID
 from data_parsing import DataManager
 # for machine learning

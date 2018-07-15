@@ -39,7 +39,6 @@ class _DB:
 			responses: List[Tuple[QID, AID]],
 			qsid: QSID,
 			course_bundle: Tuple[CID, SCourseNumber, SCourse] or None = None) -> None:
-		# todo - test this method
 		# first insert the whole response set
 		response_salt = _DB.create_response_salt_unique()
 		if course_bundle is None:
@@ -133,10 +132,12 @@ class _DB:
 		data = (TBL.QuestionSets, TBLCol.question_set_name, qs_name)
 		cursor.execute("INSERT INTO %s (%s) VALUES ('%s')" % data)
 		# add the questions into the db
-		# todo - this may throw an error in case the question exists, so handle that
-		# maybe we should return to the user the questions that failed...?
+		errors: List[Tuple[Tuple[str, str], Exception]] = []
 		for question, choices in question_set:
-			_DB.add_question(question, choices)
+			try:
+				_DB.store_question(question, choices)
+			except ValueError as e:
+				errors.append(((question, choices), e))
 		# link the questions to the question set
 		qsid = _DB.question_set_id(qs_name)
 		data = (
@@ -149,10 +150,11 @@ class _DB:
 			])
 		)
 		cursor.execute("INSERT INTO %s (%s, %s) VALUES %s;" % data)
+		return errors
 
 	@staticmethod
 	@_commit
-	def add_question(question: str, choices: List[str]) -> None:
+	def store_question(question: str, choices: List[str]) -> None:
 		if _DB.question_exists_in_db(question):
 			raise ValueError('this question already exists in the database')
 		data = (TBL.Questions, TBLCol.question, question)
@@ -420,14 +422,28 @@ class _DB:
 		""" % data)
 		data = {}
 		for rid, cid, qid, aid in cursor.fetchall():
-			data[(rid, cid)] = data.get(rid, {})
-			data[(rid, cid)][qid] = aid
+			key = (RID(rid), CID(cid))
+			data[key] = data.get(key, {})
+			data[key][QID(qid)] = AID(aid)
 		return data
 
 	@staticmethod
-	def load_response(rid: RID) -> Dict[QID, AID]:
-		# todo - implement this method
-		raise NotImplementedError
+	def load_response(rid: RID) -> Dict[QID, AID] or None:
+		data = (
+			TBLCol.question_id,
+			TBLCol.answer_id,
+			TBL.QuestionMappings,
+			TBLCol.response_id,
+			str(rid)
+		)
+		cursor.execute("SELECT %s, %s FROM %s WHERE %s = %s" % data)
+		rows = cursor.fetchall()
+		if len(rows) == 0:
+			return None
+		data = {}
+		for qid, aid in rows:
+			data[QID(qid)] = AID(aid)
+		return data
 
 	@staticmethod
 	def load_courses():
@@ -454,8 +470,10 @@ load_response = _DB.load_response
 if __name__ == '__main__':
 	# cursor.execute('SELECT * FROM Questions WHERE question = \'coffee?\';')
 	# print(cursor.fetchall())
-	# DB.add_question('Ice Cream?', ['nah', 'YEAH', 'hell no'])
+	# DB.store_question('Ice Cream?', ['nah', 'YEAH', 'hell no'])
 	# cursor.execute('SELECT aid, qid, choice FROM AnswerChoices;')
 	# print(cursor.fetchall())
 	# print(_DB.answer_choices_for_question('coffee?'))
-	print(_DB.load_mapping_set(MSID(2)))
+	# print(_DB.load_mapping_set(MSID(2)))
+	cursor.execute("SELECT * FROM QuestionSets WHERE qsid = 1042")
+	rows = cursor.fetchall()

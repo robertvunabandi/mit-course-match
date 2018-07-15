@@ -10,8 +10,9 @@ from data_parsing import DataManager
 # for machine learning
 from keras.models import Sequential
 from keras.layers import Dense
-from keras.optimizers import Adam, SGD
+from keras.optimizers import Adam
 from keras.activations import relu, softmax
+from keras.losses import categorical_crossentropy
 
 
 class Classifier:
@@ -62,7 +63,7 @@ class Classifier:
 		))
 
 		self._classifier.compile(
-			loss='categorical_crossentropy',
+			loss=categorical_crossentropy,
 			optimizer=Adam(),
 			metrics=['accuracy']
 		)
@@ -104,7 +105,9 @@ class Classifier:
 	def predict_from_rid(
 			self,
 			rid: RID) -> List[Tuple[SCourseNumber, SCourse, float]]:
-		response: Dict[QID, AID] = database.load_response(rid)
+		response: Dict[QID, AID] or None = database.load_response(rid)
+		if response is None:
+			raise KeyError("rid not found in database -> %s" % str(rid))
 		vector: np.ndarray = self.data_manager.vector_from_responses(response)
 		return self.predict_ranking(vector)
 

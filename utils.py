@@ -4,7 +4,6 @@ and anything else needed
 """
 from typing import Callable, List, Set, Iterable, Union, Any
 import random
-import os
 
 ALPHANUMERIC_ALPHABET = list('0123456789abcdefghijklmnopqrstuvwxyz')
 DIGITS_ALPHABET = list('0123456789')

@@ -1,8 +1,7 @@
 import utils
-import os
 import database
 from typing import Iterable, List, Tuple
-from custom_types import QID, SQuestion, SChoice
+from custom_types import SQuestion, SChoice
 
 
 class Question:

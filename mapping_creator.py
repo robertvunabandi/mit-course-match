@@ -1,5 +1,4 @@
 import utils
-import os
 import database
 from typing import List, Tuple, Dict
 from custom_types import SQuestion, SChoice, QID, AID, QSID

@@ -1,4 +1,3 @@
-import os
 import utils
 import numpy as np
 from typing import Iterable, Tuple, List, Dict, Set

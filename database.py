@@ -482,5 +482,6 @@ if __name__ == '__main__':
 	# print(cursor.fetchall())
 	# print(_DB.answer_choices_for_question('coffee?'))
 	# print(_DB.load_mapping_set(MSID(2)))
-	cursor.execute("SELECT * FROM QuestionSets WHERE qsid = 1042")
+	cursor.execute("SELECT * FROM QuestionSets")
 	rows = cursor.fetchall()
+	print(rows)

@@ -1,12 +1,12 @@
-import utils
-from app.sql.sql import cursor, cnx
-from app.sql.sql_constants import TBL, TBLCol
+from app.classifier import utils
+from app.db.sql import cursor, cnx
+from app.db.sql_constants import TBL, TBLCol
 from typing import List, Callable, Tuple, Set, Dict
-from custom_types import \
+from app.classifier.custom_types import \
 	SChoice, SQuestion, SCourseNumber, SCourse, QID, AID, CID, RID, MSID, QSID
 
 
-# todo - add ways to prevent sql injections, so sanitize inputs
+# todo - add ways to prevent db injections, so sanitize inputs
 
 # 		 so that online migration is easy
 def _commit(method: Callable) -> Callable:
@@ -36,7 +36,7 @@ def initialize_database() -> None:
 class _DB:
 	"""
 	DB provides ways to interact with the database without having to write
-	sql queries. This abstracts away how the database works and what queries
+	db queries. This abstracts away how the database works and what queries
 	are called from the caller.
 	"""
 

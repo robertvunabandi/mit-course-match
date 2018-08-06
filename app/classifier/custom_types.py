@@ -1,9 +1,6 @@
 import numpy as np
 from typing import Any
-import utils
 
-
-# todo - create an error object and use it when reporting errors from the database
 
 class Vector(np.ndarray):
 	@staticmethod

@@ -1,10 +1,20 @@
-import utils
-import numpy as np
 from typing import List, Tuple, Any, Dict
-import database
-from custom_types import \
-	SChoice, SQuestion, SCourseNumber, SCourse, QID, AID, RID, CID, QSID, MSID
-from data_parsing import DataManager
+
+from app.classifier.custom_types import (
+	SChoice,
+	SQuestion,
+	SCourseNumber,
+	SCourse,
+	QID,
+	AID,
+	RID,
+	CID,
+	QSID,
+	MSID,
+)
+from app.db import database
+import numpy as np
+from app.classifier.data_parsing import DataManager
 # for machine learning
 from keras.models import Sequential
 from keras.layers import Dense

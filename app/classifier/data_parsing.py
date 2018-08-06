@@ -1,8 +1,8 @@
-import utils
+from app.classifier import utils
 import numpy as np
 from typing import Iterable, Tuple, List, Dict, Set
-import database
-from custom_types import \
+from app.db import database
+from app.classifier.custom_types import \
 	Vector, SCourseNumber, SCourse, \
 	QID, AID, CID, RID, QSID, MSID, SQuestion, SChoice
 

@@ -1,7 +1,7 @@
-import utils
-import database
+from app.classifier import utils
+from app.db import database
 from typing import Iterable, List, Tuple
-from custom_types import SQuestion, SChoice
+from app.classifier.custom_types import SQuestion, SChoice
 
 
 class Question:

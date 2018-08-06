@@ -1,7 +1,7 @@
-import utils
-import database
+from app.classifier import utils
+from app.db import database
 from typing import List, Tuple, Dict
-from custom_types import SQuestion, SChoice, QID, AID, QSID
+from app.classifier.custom_types import SQuestion, SChoice, QID, AID, QSID
 
 
 class QuestionAnswersToVectorMap:

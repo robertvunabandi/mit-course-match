@@ -158,8 +158,10 @@
 
   // Custom Globals
   "globals": {
-    "require": true
+    "require": true,
+    "Vue": true
   }
   // additional predefined global variables
   /* global require */
+  /* global Vue */
 }

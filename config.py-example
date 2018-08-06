@@ -1,0 +1,22 @@
+"""
+This is an example of the file config.py. This file needs to be added
+in the root folder in order for this to work. config.py is imported in
+main.py, and then all of these environment variables are set using
+os.environ.
+
+See the following links for more context:
+https://docs.python.org/3/library/os.html
+https://hackernoon.com/4-ways-to-manage-the-configuration-in-python-4623049e841b
+"""
+
+# SQL host
+SQL_HOST = ""
+
+# SQL username
+SQL_USER = ""
+
+# SQL password
+SQL_PASSWORD = ""
+
+# SQL database uri
+SQL_DATABASE = ""

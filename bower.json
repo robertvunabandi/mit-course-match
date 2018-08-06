@@ -1,0 +1,24 @@
+{
+  "name": "mit-course-match",
+  "homepage": "https://github.com/robertvunabandi/mit-course-match",
+  "authors": [
+    "Robert Vunabandi <rvunabandi@gmail.com>"
+  ],
+  "description": "A web application that helps undecided students find what MIT course they \"match\" with the most.",
+  "main": "",
+  "keywords": [
+    "classifier"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "react": "^16.1.0"
+  }
+}

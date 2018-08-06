@@ -2,5 +2,5 @@
 window.addEventListener("load", main);
 
 function main() {
-    console.log("hello!");
+    console.log("hello world there!");
 }

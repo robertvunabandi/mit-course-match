@@ -1,6 +1,6 @@
 import utils
-from sql.sql import cursor, cnx
-from sql.sql_constants import TBL, TBLCol
+from app.sql.sql import cursor, cnx
+from app.sql.sql_constants import TBL, TBLCol
 from typing import List, Callable, Tuple, Set, Dict
 from custom_types import \
 	SChoice, SQuestion, SCourseNumber, SCourse, QID, AID, CID, RID, MSID, QSID

@@ -11,9 +11,9 @@ LETTERS_ALPHABET = list('abcdefghijklmnopqrstuvwxyz')
 EXIT_PROMPT = '<Q>'
 
 
-def depreciated(func: Callable) -> Callable:
+def deprecated(func: Callable) -> Callable:
 	def method(*args, **kwargs):
-		print('Warning: this method is utilsdepreciated. Please, do not use it.')
+		print('Warning: this method is deprecated.')
 		return func(*args, **kwargs)
 
 	return method

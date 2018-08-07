@@ -39,10 +39,12 @@ Let `QMin` be the minimum number of questions needed for a population of `PCount
 - Training becomes more complicated with this. It now looks more like a recommender problem. However, I am not sure how to best approach this.
   - That implies learning how to best do this since the questions will be categorical (instead of linear/real). 
   - After learning how to best train this, I will then need to figure out how to either use tensorflow to train the model or create it from scratch. 
+  - **Is this a recommender system though?** Should think carefully about that. Another way to do this may be possible.
+  - [Google Cloud Guide](https://cloud.google.com/solutions/machine-learning/recommendation-system-tensorflow-overview)
 - We need to maintain state of the user. Therefore, we'd need to probably have users sign up. Signing up sucks.
   - That implies storing credentials in a database. That can be a hassle. 
     - Well this is not that bad since we already needed a database to store the questions. 
-  - Could potentially use cookies to make it esier
+  - Could potentially use cookies to make it easier
   - People don't like signing up. However, we can easily have them sign up with Facebook or Github or Google or Twitter. That can make the process faster. 
 - Collecting data becomes difficult:
   - How many questions should people answer until we know that we have collected enough data per person?

@@ -1,9 +1,59 @@
-Whatever the format, let's home we are able to collect at least 1000 answers per questions for training. 
+# Design Format
 
+These are the design choices that will be implemented in this format:
+- We'll use a **Tinder** format for the quiz portion. What that means is that people get to answer questions one by one, and they get the questions in a shuffled order.
+- There will be a total of 100 questions to answers. 
+- Users will need to answer at least 25 questions to get predictions. Other unanswered questions will be given a default value. 
+- We use the model we have in the database, except now there will be no question sets. There will be just questions. 
+- We will use a user's table and track which questions they have answered. So, that means people will need to sign up.
+  - Let people sign up with Facebook or Google or MITOpenIDConnect or Github. 
+
+## Collecting Training Data
+
+Some roadblocks for collecting training data:
+
+- There is no incentive to be a subject to collect training data if one has already chosen their major and love it.
+  - We'd need to incentivize people to do it somehow. Asking friends to do it can work, but then we wouldn't collect enough training data. Maybe raffles? 
+- When collecting the training data, the instructions need to be clear so that people know what to do.
+- To reach a lot of people, we'll need to dormspam like crazy. 
+- Only sophomores+ should be eligible. How do we prevent freshmen from getting targeted?
+- If people "sign-up", then we can set a reminder to ask them to label (say what course they have chosen) their course 1 year after they login (or on a specific set of dates in the academic year after they sign up).
+
+We can do the following: 
+
+- we can offer some of the following incentives:
+  - Raffle for prizes. Let's have the following raffle goals:
+    - 1 person wins a $50 gift card
+    - 5 people win $25 gift cards
+    - 5 people win $10 gift cards
+  - One person has to answer at least 25 questions to enter the raffle. 
+    - At 25 questions, it's as if they have won 1 raffle ticket.
+    - For each question in count 26-50, they win 0.2 extra raffle tickets. **Total: 5**
+    - For each question in count 51-60, they win 0.3 extra raffle tickets. **Total: 3**
+    - For each question in count 61-80, they win 0.4 extra raffle tickets. **Total: 8**
+    - For each question in count 81-95, they win 0.6 extra raffle tickets. **Total: 9** 
+    - For each question in count 96-100, they win 2 extra rffle tickets. **Total: 10** 
+  - Maybe ask money from MIT to do this raffle. It could help the MIT community.
+  
+
+
+## Goals
+
+- We should get a total of about 500 labeled response per question to deem our predictor somewhat accurate. 
+
+
+
+
+
+---
+
+# Previous Discussions on Format
+
+#### `[Completed on 2018-08-07]`
 
 I have thought of two formats to go about this.
 
-# Quiz Format
+## Quiz Format
 
 This format means there will be one quiz with a limited number of questions to answer. 
 
@@ -20,7 +70,7 @@ Let `QCount` be the number of questions in the quiz. Then, there will be a maxim
 - This is kind of boring to be honest. It's also easy. I almost already have all the infrastructure needed to build it. Where is the learning in that?
   - Due to being boring, less developers will also be interested in contributing. Ideally, if there are interested people who want to contribute, that would be nice.   
 
-# "Tinder" Format
+## "Tinder" Format
 
 The tinder format is not the one I had in mind when starting this. However, it has some interesting advantages. Before we get into that, here's how this format works.
 
@@ -41,6 +91,7 @@ Let `QMin` be the minimum number of questions needed for a population of `PCount
   - After learning how to best train this, I will then need to figure out how to either use tensorflow to train the model or create it from scratch. 
   - **Is this a recommender system though?** Should think carefully about that. Another way to do this may be possible.
   - [Google Cloud Guide](https://cloud.google.com/solutions/machine-learning/recommendation-system-tensorflow-overview)
+  - If the number of questions is limited, then this will not be a recommender system. 
 - We need to maintain state of the user. Therefore, we'd need to probably have users sign up. Signing up sucks.
   - That implies storing credentials in a database. That can be a hassle. 
     - Well this is not that bad since we already needed a database to store the questions. 

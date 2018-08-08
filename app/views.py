@@ -22,11 +22,11 @@ def get_questions():
 			]
 		},
 		{
-			'question': 'hello there',
-			'qid': 35,
+			'question': 'okay tell me',
+			'qid':24,
 			'answers': [
-				{'choice': 'Lemon', 'aid': 46},
-				{'choice': 'Almond', 'aid': 55}
+				{'choice': 'No', 'aid': 41},
+				{'choice': 'Yes', 'aid': 31}
 			]
 		}
 	]

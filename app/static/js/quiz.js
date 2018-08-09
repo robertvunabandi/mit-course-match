@@ -1,5 +1,5 @@
 /**
- * This is the main quiz component block.
+ * This is the mainDone quiz component block.
  * This block handles rendering and answering the questions.
  *
  * Some things to note:
@@ -10,24 +10,24 @@
  *   external endpoints to get answered questions and such.
  * */
 "use strict";
-/* global React, ReactDOM */
+/* global React, ReactDOM, APP */
 
-window.addEventListener("load", mainTemporarily);
+window.addEventListener(APP.events.mainDone.type, loadQuiz);
 
-function mainTemporarily() {
+function loadQuiz() {
   // load questions via API call, todo - write API from 6.148
-  let questions = [{
-    question: "hello there",
-    qid: 35,
-    answers: [{ choice: "Lemon", aid: 46 }, { choice: "Almond", aid: 55 }]
-  }, {
-    question: "okay tell me",
-    qid: 24,
-    answers: [{ choice: "No", aid: 41 }, { choice: "Yes", aid: 31 }]
-  }];
   /* jshint ignore:start */
-  ReactDOM.render(React.createElement(Quiz, { questions: questions }), document.getElementById("root"));
+  const quiz = React.createElement(Quiz, { questions: [{
+      question: "hello there",
+      qid: 35,
+      answers: [{ choice: "Lemon", aid: 46 }, { choice: "Almond", aid: 55 }]
+    }, {
+      question: "okay tell me",
+      qid: 24,
+      answers: [{ choice: "No", aid: 41 }, { choice: "Yes", aid: 31 }]
+    }] });
   /* jshint ignore:end */
+  ReactDOM.render(quiz, document.getElementById("root"));
 }
 
 /* global React */

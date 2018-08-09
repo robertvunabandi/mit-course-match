@@ -2,7 +2,7 @@
   "name": "mit-course-match",
   "version": "1.0.0",
   "description": "A web application that helps undecided students find what MIT course they \"match\" with the most.",
-  "main": "index.js",
+  "mainDone": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

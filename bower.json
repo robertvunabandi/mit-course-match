@@ -5,7 +5,7 @@
     "Robert Vunabandi <rvunabandi@gmail.com>"
   ],
   "description": "A web application that helps undecided students find what MIT course they \"match\" with the most.",
-  "main": "",
+  "mainDone": "",
   "keywords": [
     "classifier"
   ],

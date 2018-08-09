@@ -1,19 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>MIT Course Match</title>
-    <link
-            rel="stylesheet"
-            type="text/css"
-            href="{{ url_for('static', filename='styles/main.css') }}">
+{%  extends "base.html" %}
 
-    <script src="{{ url_for('static', filename='bower_components/react/react.production.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='bower_components/react/react-dom.production.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-</head>
-<body>
-<div>This is under development</div>
-<div id="root"></div>
-</body>
-</html>
+{% block title %}Home{% endblock %}
+{% block styles %}{% endblock %}
+{% block scripts %}{% endblock %}

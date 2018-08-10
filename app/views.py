@@ -11,6 +11,7 @@ def index():
 def quiz():
 	return render_template("quiz.html")
 
+
 def get_questions():
 	return [
 		{
@@ -23,7 +24,7 @@ def get_questions():
 		},
 		{
 			"question": "okay tell me",
-			"qid":24,
+			"qid": 24,
 			"answers": [
 				{"choice": "No", "aid": 41},
 				{"choice": "Yes", "aid": 31}
@@ -31,10 +32,18 @@ def get_questions():
 		}
 	]
 
+
 @app.route("/questions", methods=["GET"])
 def questions():
-	# temporary
+	"""
+	fetches all the questions for a quiz
+	:return: json of the format
+		List[Dict["question": String, "qid": Int, "answers": AnswerList]]
+		AnswerList: List[Dict["choice": String, "aid": Int]]
+	"""
+	# TODO - replace this with the correct method that makes a call to the db
 	return json.dumps(get_questions())
+
 
 @app.errorhandler(404)
 def not_found(error):

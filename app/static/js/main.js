@@ -9,6 +9,11 @@ window.addEventListener("load", main);
 const APP = {
   events: {
     mainDone: new Event("mit-course-match-loaded")
+  },
+  ids: {
+    navigationBar: "navigation-bar",
+    root: "root",
+    footer: "footer"
   }
 };
 

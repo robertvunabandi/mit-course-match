@@ -38,8 +38,7 @@ function loadQuiz() {
       ]
     }]}/>;
   /* jshint ignore:end */
-  ReactDOM.render(quiz, document.getElementById("root"));
-
+  ReactDOM.render(quiz, document.querySelector("#" + APP.ids.root));
 }
 
 

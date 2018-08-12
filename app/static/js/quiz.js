@@ -25,11 +25,11 @@ function loadQuiz() {
   const quiz = React.createElement(Quiz, { questions: [{
       question: "hello there",
       qid: 35,
-      answers: [{ choice: "Lemon", aid: 46 }, { choice: "Almond", aid: 55 }]
+      choices: [{ choice: "Lemon", aid: 46 }, { choice: "Almond", aid: 55 }]
     }, {
       question: "okay tell me",
       qid: 24,
-      answers: [{ choice: "No", aid: 41 }, { choice: "Yes", aid: 31 }]
+      choices: [{ choice: "No", aid: 41 }, { choice: "Yes", aid: 31 }]
     }] });
   /* jshint ignore:end */
 
@@ -74,6 +74,7 @@ class Quiz extends React.Component {
   }
 
   render() {
+    const question = this.state.questions[this.getUnansweredQuestionIndex()];
     /* jshint ignore:start */
     return React.createElement(
       "div",
@@ -81,7 +82,9 @@ class Quiz extends React.Component {
       React.createElement(QuizState, { total: this.state.total, answered: this.state.answered }),
       React.createElement(RCSeparator, null),
       React.createElement(QuizQuestionDisplay, {
-        question: this.state.questions[this.getUnansweredQuestionIndex()]
+        question: question.question,
+        qid: question.qid,
+        choices: question.choices
       })
     );
     /* jshint ignore:end */
@@ -145,7 +148,6 @@ class QuizQuestionDisplay extends React.Component {
   // jshint ignore:line
   constructor(props) {
     super(props);
-    this.state = props.question;
   }
 
   render() {
@@ -154,13 +156,13 @@ class QuizQuestionDisplay extends React.Component {
       "span",
       { className: "quiz-question-display" },
       React.createElement(QuizQuestion, {
-        question: this.props.question.question,
-        qid: this.props.question.qid
+        question: this.props.question,
+        qid: this.props.qid
       }),
       React.createElement(
         "span",
         { className: "quiz-choices" },
-        this.props.question.answers.map(answer => {
+        this.props.choices.map(answer => {
           return React.createElement(QuizAnswerChoice, { choice: answer.choice, aid: answer.aid });
         })
       )

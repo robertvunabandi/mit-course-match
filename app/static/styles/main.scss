@@ -1,7 +1,4 @@
-/* colors. Using numbers for conciseness. */
-$color-1: #FFF; // primary color
-$color-2: #000; // secondary color
-$color-3: #FFF; // ternary color
+@import "constants.scss";
 
 * {
   box-sizing: border-box;
@@ -33,38 +30,6 @@ body {
 
 #content {
   padding: 1rem;
-}
-
-/* content styling just specific to the quiz */
-#content {
-  .quiz {
-    .quiz-state {
-      border: 1px solid black;
-      .quiz-progress-bar {
-        border: 1px solid black;
-        border-radius: 100rem;
-        font-size: 0.5rem;
-        span {
-          border-radius: 100rem;
-          background-color: red;
-        }
-      }
-    }
-    .quiz-question-display {
-      .quiz-question {
-        .quiz-question-q-symbol {
-          display: block;
-          font-weight: 900;
-        }
-      }
-      .quiz-choices {
-        display: block;
-        .quiz-answer-choice {
-
-        }
-      }
-    }
-  }
 }
 
 #footer {

@@ -1,6 +1,11 @@
 {%  extends "base.html" %}
 {% block title %}Quiz{% endblock %}
-{% block styles %}{% endblock %}
+{% block styles %}
+    <link
+            rel="stylesheet"
+            type="text/css"
+            href="{{ url_for("static", filename="styles/quiz.css") }}">
+{% endblock %}
 {% block scripts %}
     <script defer src="{{ url_for("static", filename="js/quiz.js") }}"></script>
 {% endblock %}

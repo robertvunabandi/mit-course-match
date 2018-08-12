@@ -1,4 +1,10 @@
+/* colors. Using numbers for conciseness. */
+#navigation-bar ul {
+  list-style-type: none; }
+#navigation-bar li {
+  display: inline-block; }
+
 body {
   background-color: rgba(0, 0, 0, 0.1); }
 
-/*# sourceMappingURL=mainDone.css.map */
+/*# sourceMappingURL=main.css.map */

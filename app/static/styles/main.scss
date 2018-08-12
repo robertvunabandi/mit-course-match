@@ -1,3 +1,17 @@
+/* colors. Using numbers for conciseness. */
+$color-1: #FFF; // primary color
+$color-2: #FFF; // secondary color
+$color-3: #FFF; // ternary color
+
+#navigation-bar {
+  ul {
+    list-style-type: none;
+  }
+  li {
+    display: inline-block;
+  }
+}
+
 body {
   background-color: rgba(0,0,0,0.1);
 }

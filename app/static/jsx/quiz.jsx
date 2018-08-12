@@ -10,9 +10,8 @@
  *   external endpoints to get answered questions and such.
  * */
 "use strict";
-/* global React, ReactDOM, APP */
-
-/* global RCSeparator */
+/* global React, ReactDOM, APP, UTIL */
+/* global RCSeparator, RCLineSeparator, RCPaddedLineSeparator */
 
 const QuizConfig = {
   minQuestionToAnswer: 1,
@@ -48,10 +47,41 @@ function loadQuiz() {
 class Quiz extends React.Component { // jshint ignore:line
   constructor(props) {
     super(props);
-    this.state = {
+    const self = this;
+    self.state = {
       answered: 0,
       total: props.questions.length,
+      questions: [],
     };
+    props.questions.forEach(function (question) {
+      question.answer_aid = null;
+      self.questions.push(question);
+    });
+  }
+
+  getAnsweredQuestionsCount() {
+    let count = 0;
+    this.state.questions.forEach(function (question) {
+      if (question.answer_aid) {
+        count += 1;
+      }
+    });
+    return count;
+  }
+
+  /**
+   * picks, among the questions that are not answered, one at random and
+   * returns its index. if no unanswered question is found, this will
+   * return -1.
+   *
+   * @return int
+   * */
+  getUnansweredQuestionIndex() {
+    return UTIL.randomFromList(
+      this.state.questions
+        .map((question, index) => !question.answer_aid ? index : -1)
+        .filter((index) => index > -1)
+    );
   }
 
   render() {
@@ -59,9 +89,10 @@ class Quiz extends React.Component { // jshint ignore:line
     return (
       <div>
         <QuizState total={this.state.total} answered={this.state.answered}/>
-        <RCSeparator />
-        <QuizQuestionManager questions={this.props.questions}/>
-        <RCPaddedLineSeparator />
+        <RCSeparator/>
+        <QuizQuestionDisplay
+          question={this.state.questions[this.getUnansweredQuestionIndex()]}
+        />
       </div>
     );
     /* jshint ignore:end */
@@ -79,7 +110,7 @@ class QuizState extends React.Component { // jshint ignore:line
     return (
       <div className={"quiz-state"}>
         <div>Progress:</div>
-        <QuizProgressBar percentage={this.props.answered / this.props.total} />
+        <QuizProgressBar percentage={this.props.answered / this.props.total}/>
         <div>Answered {this.props.answered} out of {this.props.total}</div>
       </div>);
     /* jshint ignore:end */
@@ -98,7 +129,12 @@ class QuizProgressBar extends React.Component { // jshint ignore:line
     /* jshint ignore:end */
   }
 }
-class QuizQuestionManager extends React.Component { // jshint ignore:line
+
+/**
+ * with the question display, we display one question at a time that is
+ * passed in as a parameter.
+ * */
+class QuizQuestionDisplay extends React.Component { // jshint ignore:line
   render() {
     /* jshint ignore:start */
     return <div>In Development</div>;

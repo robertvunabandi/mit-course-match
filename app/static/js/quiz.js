@@ -10,9 +10,8 @@
  *   external endpoints to get answered questions and such.
  * */
 "use strict";
-/* global React, ReactDOM, APP */
-
-/* global RCSeparator */
+/* global React, ReactDOM, APP, UTIL */
+/* global RCSeparator, RCLineSeparator, RCPaddedLineSeparator */
 
 const QuizConfig = {
   minQuestionToAnswer: 1
@@ -41,10 +40,43 @@ class Quiz extends React.Component {
   // jshint ignore:line
   constructor(props) {
     super(props);
-    this.state = {
+    const self = this;
+    self.state = {
       answered: 0,
-      total: props.questions.length
+      total: props.questions.length,
+      questions: []
     };
+    props.questions.forEach(function (question) {
+      question.answer_aid = null;
+      self.questions.push(question);
+    });
+  }
+
+  getAnsweredQuestionsCount() {
+    let count = 0;
+    this.state.questions.forEach(function (question) {
+      if (question.answer_aid) {
+        count += 1;
+      }
+    });
+    return count;
+  }
+
+  /**
+   * picks, among the questions that are not answered, one at random and
+   * returns its index. if no unanswered question is found, this will
+   * return -1.
+   *
+   * @return int
+   * */
+  getUnansweredQuestionIndex() {
+    let indices = [];
+    for (let i = 0; i < this.state.questions.length; i += 1) {
+      if (!this.state.questions[i].answer_aid) {
+        indices.append(i);
+      }
+    }
+    return UTIL.randomFromList(indices);
   }
 
   render() {
@@ -54,8 +86,7 @@ class Quiz extends React.Component {
       null,
       React.createElement(QuizState, { total: this.state.total, answered: this.state.answered }),
       React.createElement(RCSeparator, null),
-      React.createElement(QuizQuestionManager, { questions: this.props.questions }),
-      React.createElement(RCPaddedLineSeparator, null)
+      React.createElement(QuizQuestionDisplay, { questions: this.state.questions })
     );
     /* jshint ignore:end */
   }
@@ -109,7 +140,12 @@ class QuizProgressBar extends React.Component {
     /* jshint ignore:end */
   }
 }
-class QuizQuestionManager extends React.Component {
+
+/**
+ * with the question display, we display one question at a time that is
+ * passed in as a parameter.
+ * */
+class QuizQuestionDisplay extends React.Component {
   // jshint ignore:line
   render() {
     /* jshint ignore:start */

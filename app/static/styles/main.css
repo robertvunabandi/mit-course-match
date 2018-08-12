@@ -1,10 +1,19 @@
 /* colors. Using numbers for conciseness. */
-#navigation-bar ul {
-  list-style-type: none; }
-#navigation-bar li {
-  display: inline-block; }
+#navigation-bar {
+  background-color: #000;
+  color: white;
+  padding: 1rem; }
+  #navigation-bar ul {
+    list-style-type: none;
+    margin: 0; }
+    #navigation-bar ul li {
+      display: inline-block;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid white; }
+    #navigation-bar ul li + li {
+      margin-left: 1rem; }
 
 body {
-  background-color: rgba(0, 0, 0, 0.1); }
+  margin: 0; }
 
 /*# sourceMappingURL=main.css.map */

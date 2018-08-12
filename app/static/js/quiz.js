@@ -48,7 +48,7 @@ class Quiz extends React.Component {
     };
     props.questions.forEach(function (question) {
       question.answer_aid = null;
-      self.questions.push(question);
+      self.state.questions.push(question);
     });
   }
 
@@ -70,23 +70,19 @@ class Quiz extends React.Component {
    * @return int
    * */
   getUnansweredQuestionIndex() {
-    let indices = [];
-    for (let i = 0; i < this.state.questions.length; i += 1) {
-      if (!this.state.questions[i].answer_aid) {
-        indices.append(i);
-      }
-    }
-    return UTIL.randomFromList(indices);
+    return UTIL.randomFromList(this.state.questions.map((question, index) => !question.answer_aid ? index : -1).filter(index => index > -1));
   }
 
   render() {
     /* jshint ignore:start */
     return React.createElement(
       "div",
-      null,
+      { className: "quiz" },
       React.createElement(QuizState, { total: this.state.total, answered: this.state.answered }),
       React.createElement(RCSeparator, null),
-      React.createElement(QuizQuestionDisplay, { questions: this.state.questions })
+      React.createElement(QuizQuestionDisplay, {
+        question: this.state.questions[this.getUnansweredQuestionIndex()]
+      })
     );
     /* jshint ignore:end */
   }
@@ -147,12 +143,27 @@ class QuizProgressBar extends React.Component {
  * */
 class QuizQuestionDisplay extends React.Component {
   // jshint ignore:line
+  constructor(props) {
+    super(props);
+    this.state = props.question;
+  }
+
   render() {
     /* jshint ignore:start */
     return React.createElement(
-      "div",
-      null,
-      "In Development"
+      "span",
+      { className: "quiz-question-display" },
+      React.createElement(QuizQuestion, {
+        question: this.props.question.question,
+        qid: this.props.question.qid
+      }),
+      React.createElement(
+        "span",
+        { className: "quiz-choices" },
+        this.props.question.answers.map(answer => {
+          return React.createElement(QuizAnswerChoice, { choice: answer.choice, aid: answer.aid });
+        })
+      )
     );
     /* jshint ignore:end */
   }
@@ -160,25 +171,45 @@ class QuizQuestionDisplay extends React.Component {
 
 class QuizQuestion extends React.Component {
   // jshint ignore:line
-  constructor(props) {
-    super(props);
-    this.state = {
-      answer: null
-    };
-  }
-
-  isAnswered() {
-    return this.state.answer !== null;
-  }
-
   render() {
     /* jshint ignore:start */
     return React.createElement(
-      "div",
-      null,
-      "In Development"
+      "span",
+      { className: "quiz-question" },
+      React.createElement(QuizQuestionQSymbol, null),
+      React.createElement(
+        "span",
+        null,
+        this.props.question
+      )
     );
     /* jshint ignore:end */
   }
+}
 
+class QuizQuestionQSymbol extends React.Component {
+  // jshint ignore:line
+  render() {
+    /* jshint ignore:start */
+    // TODO - create this symbol
+    return React.createElement(
+      "span",
+      { className: "quiz-question-q-symbol" },
+      "QSymbol"
+    );
+    /* jshint ignore:end */
+  }
+}
+
+class QuizAnswerChoice extends React.Component {
+  // jshint ignore:line
+  render() {
+    /* jshint ignore:start */
+    return React.createElement(
+      "span",
+      { className: "quiz-answer-choice" },
+      this.props.choice
+    );
+    /* jshint ignore:end */
+  }
 }

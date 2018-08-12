@@ -55,7 +55,7 @@ class Quiz extends React.Component { // jshint ignore:line
     };
     props.questions.forEach(function (question) {
       question.answer_aid = null;
-      self.questions.push(question);
+      self.state.questions.push(question);
     });
   }
 
@@ -87,7 +87,7 @@ class Quiz extends React.Component { // jshint ignore:line
   render() {
     /* jshint ignore:start */
     return (
-      <div>
+      <div className={"quiz"}>
         <QuizState total={this.state.total} answered={this.state.answered}/>
         <RCSeparator/>
         <QuizQuestionDisplay
@@ -135,30 +135,60 @@ class QuizProgressBar extends React.Component { // jshint ignore:line
  * passed in as a parameter.
  * */
 class QuizQuestionDisplay extends React.Component { // jshint ignore:line
+  constructor(props) {
+    super(props);
+    this.state = props.question;
+  }
+
   render() {
     /* jshint ignore:start */
-    return <div>In Development</div>;
+    return (
+      <span className={"quiz-question-display"}>
+        <QuizQuestion
+          question={this.props.question.question}
+          qid={this.props.question.qid}
+        />
+        <span className={"quiz-choices"}>
+          {this.props.question.answers.map(
+            (answer) => {
+              return (
+                <QuizAnswerChoice choice={answer.choice} aid={answer.aid} />
+              );
+            }
+          )}
+        </span>
+      </span>
+    );
     /* jshint ignore:end */
   }
 }
 
 class QuizQuestion extends React.Component { // jshint ignore:line
-  constructor(props) {
-    super(props);
-    this.state = {
-      answer: null
-    };
-  }
-
-  isAnswered() {
-    return this.state.answer !== null;
-  }
-
-
   render() {
     /* jshint ignore:start */
-    return <div>In Development</div>;
+    return (
+      <span className={"quiz-question"}>
+        <QuizQuestionQSymbol />
+        <span>{this.props.question}</span>
+      </span>
+    );
     /* jshint ignore:end */
   }
+}
 
+class QuizQuestionQSymbol extends React.Component { // jshint ignore:line
+  render() {
+    /* jshint ignore:start */
+    // TODO - create this symbol
+    return <span className={"quiz-question-q-symbol"}>QSymbol</span>;
+    /* jshint ignore:end */
+  }
+}
+
+class QuizAnswerChoice extends React.Component { // jshint ignore:line
+  render() {
+    /* jshint ignore:start */
+    return <span className={"quiz-answer-choice"}>{this.props.choice}</span>;
+    /* jshint ignore:end */
+  }
 }

@@ -23,15 +23,20 @@ body {
   padding: 1rem; }
 
 /* content styling just specific to the quiz */
-#content .quiz-state {
+#content .quiz .quiz-state {
   border: 1px solid black; }
-  #content .quiz-state .quiz-progress-bar {
+  #content .quiz .quiz-state .quiz-progress-bar {
     border: 1px solid black;
     border-radius: 100rem;
     font-size: 0.5rem; }
-    #content .quiz-state .quiz-progress-bar span {
+    #content .quiz .quiz-state .quiz-progress-bar span {
       border-radius: 100rem;
       background-color: red; }
+#content .quiz .quiz-question-display .quiz-question .quiz-question-q-symbol {
+  display: block;
+  font-weight: 900; }
+#content .quiz .quiz-question-display .quiz-choices {
+  display: block; }
 
 #footer {
   position: absolute;

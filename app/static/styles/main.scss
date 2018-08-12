@@ -37,15 +37,31 @@ body {
 
 /* content styling just specific to the quiz */
 #content {
-  .quiz-state {
-    border: 1px solid black;
-    .quiz-progress-bar {
+  .quiz {
+    .quiz-state {
       border: 1px solid black;
-      border-radius: 100rem;
-      font-size: 0.5rem;
-      span {
+      .quiz-progress-bar {
+        border: 1px solid black;
         border-radius: 100rem;
-        background-color: red;
+        font-size: 0.5rem;
+        span {
+          border-radius: 100rem;
+          background-color: red;
+        }
+      }
+    }
+    .quiz-question-display {
+      .quiz-question {
+        .quiz-question-q-symbol {
+          display: block;
+          font-weight: 900;
+        }
+      }
+      .quiz-choices {
+        display: block;
+        .quiz-answer-choice {
+
+        }
       }
     }
   }

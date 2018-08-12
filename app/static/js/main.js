@@ -31,3 +31,31 @@ const UTIL = {
     return "#" + string;
   }
 };
+
+/**
+ * below we define a set of reusable component across the site.
+ * all these class will start with the prefix "RC", which stands
+ * for "Reusable Component". */
+function RCSeparator() {
+  /* jshint ignore:start */
+  return React.createElement("div", { className: "rc-separator" });
+  /* jshint ignore:end */
+}
+
+function RCLineSeparator() {
+  /* jshint ignore:start */
+  return React.createElement("div", { className: "rc-line-separator" });
+  /* jshint ignore:end */
+}
+
+function RCPaddedLineSeparator() {
+  /* jshint ignore:start */
+  return React.createElement(
+    "span",
+    null,
+    React.createElement(RCSeparator, null),
+    React.createElement(RCLineSeparator, null),
+    React.createElement(RCSeparator, null)
+  );
+  /* jshint ignore:end */
+}

@@ -20,7 +20,7 @@ const APP = {
 };
 
 function main() {
-    window.dispatchEvent(APP.events.mainDone);
+  window.dispatchEvent(APP.events.mainDone);
 }
 
 /** utility functions */
@@ -30,3 +30,31 @@ const UTIL = {
     return "#" + string;
   }
 };
+
+/**
+ * below we define a set of reusable component across the site.
+ * all these class will start with the prefix "RC", which stands
+ * for "Reusable Component". */
+function RCSeparator() {
+  /* jshint ignore:start */
+  return <div className={"rc-separator"}></div>;
+  /* jshint ignore:end */
+}
+
+function RCLineSeparator() {
+  /* jshint ignore:start */
+  return <div className={"rc-line-separator"}></div>;
+  /* jshint ignore:end */
+}
+
+function RCPaddedLineSeparator() {
+  /* jshint ignore:start */
+  return (
+    <span>
+      <RCSeparator/>
+      <RCLineSeparator/>
+      <RCSeparator/>
+    </span>
+  );
+  /* jshint ignore:end */
+}

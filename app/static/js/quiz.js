@@ -12,6 +12,8 @@
 "use strict";
 /* global React, ReactDOM, APP */
 
+/* global RCSeparator */
+
 const QuizConfig = {
   minQuestionToAnswer: 1
 };
@@ -51,7 +53,9 @@ class Quiz extends React.Component {
       "div",
       null,
       React.createElement(QuizState, { total: this.state.total, answered: this.state.answered }),
-      React.createElement(QuizQuestionManager, { questions: this.props.questions })
+      React.createElement(RCSeparator, null),
+      React.createElement(QuizQuestionManager, { questions: this.props.questions }),
+      React.createElement(RCPaddedLineSeparator, null)
     );
     /* jshint ignore:end */
   }

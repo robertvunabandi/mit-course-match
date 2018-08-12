@@ -61,3 +61,14 @@ body {
   padding: 1rem;
   min-height: 3rem;
 }
+
+/* RC components */
+.rc-separator {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.rc-line-separator {
+  min-height: 1px;
+  background-color: black;
+}

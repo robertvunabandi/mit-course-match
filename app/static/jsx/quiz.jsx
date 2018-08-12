@@ -12,6 +12,8 @@
 "use strict";
 /* global React, ReactDOM, APP */
 
+/* global RCSeparator */
+
 const QuizConfig = {
   minQuestionToAnswer: 1,
 };
@@ -57,7 +59,9 @@ class Quiz extends React.Component { // jshint ignore:line
     return (
       <div>
         <QuizState total={this.state.total} answered={this.state.answered}/>
+        <RCSeparator />
         <QuizQuestionManager questions={this.props.questions}/>
+        <RCPaddedLineSeparator />
       </div>
     );
     /* jshint ignore:end */

@@ -25,7 +25,7 @@ function loadQuiz() {
   const quiz = <Quiz questions={[{
     question: "hello there",
     qid: 35,
-    answers: [
+    choices: [
       {choice: "Lemon", aid: 46},
       {choice: "Almond", aid: 55}
     ]
@@ -33,7 +33,7 @@ function loadQuiz() {
     {
       question: "okay tell me",
       qid: 24,
-      answers: [
+      choices: [
         {choice: "No", aid: 41},
         {choice: "Yes", aid: 31}
       ]
@@ -85,13 +85,16 @@ class Quiz extends React.Component { // jshint ignore:line
   }
 
   render() {
+    const question = this.state.questions[this.getUnansweredQuestionIndex()];
     /* jshint ignore:start */
     return (
       <div className={"quiz"}>
         <QuizState total={this.state.total} answered={this.state.answered}/>
         <RCSeparator/>
         <QuizQuestionDisplay
-          question={this.state.questions[this.getUnansweredQuestionIndex()]}
+          question={question.question}
+          qid={question.qid}
+          choices={question.choices}
         />
       </div>
     );
@@ -137,7 +140,6 @@ class QuizProgressBar extends React.Component { // jshint ignore:line
 class QuizQuestionDisplay extends React.Component { // jshint ignore:line
   constructor(props) {
     super(props);
-    this.state = props.question;
   }
 
   render() {
@@ -145,11 +147,11 @@ class QuizQuestionDisplay extends React.Component { // jshint ignore:line
     return (
       <span className={"quiz-question-display"}>
         <QuizQuestion
-          question={this.props.question.question}
-          qid={this.props.question.qid}
+          question={this.props.question}
+          qid={this.props.qid}
         />
         <span className={"quiz-choices"}>
-          {this.props.question.answers.map(
+          {this.props.choices.map(
             (answer) => {
               return (
                 <QuizAnswerChoice choice={answer.choice} aid={answer.aid} />

@@ -14,7 +14,7 @@ const APP = {
   // HTML ids of various elements
   ids: {
     navigationBar: "navigation-bar",
-    root: "root",
+    content: "content",
     footer: "footer",
   },
 };

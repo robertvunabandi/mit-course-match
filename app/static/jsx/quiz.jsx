@@ -38,7 +38,8 @@ function loadQuiz() {
       ]
     }]}/>;
   /* jshint ignore:end */
-  ReactDOM.render(quiz, document.querySelector("#" + APP.ids.root));
+
+  ReactDOM.render(quiz, document.querySelector("#" + APP.ids.content));
 }
 
 
@@ -63,51 +64,31 @@ class Quiz extends React.Component { // jshint ignore:line
   }
 }
 
+/**
+ * the QuizState gives context about the state of the app so far.
+ * i.e., it provides percentage completed, whether one can submit
+ * questions for predictions (since one doesn't have to answer
+ * everything), etc. */
 class QuizState extends React.Component { // jshint ignore:line
   render() {
     /* jshint ignore:start */
     return (
-      <div>
-        <div>Your Progress: </div>
-        <QuizProgressBar
-          percentageCompleted={this.props.answered / this.props.total}
-          totalQuestionCount={this.props.total} />
+      <div className={"quiz-state"}>
+        <div>Progress:</div>
+        <QuizProgressBar percentage={this.props.answered / this.props.total} />
+        <div>Answered {this.props.answered} out of {this.props.total}</div>
       </div>);
     /* jshint ignore:end */
   }
 }
 
 class QuizProgressBar extends React.Component { // jshint ignore:line
-  constructor(props) {
-    super(props);
-  }
-  static getColor(percentage_completed, total_question_count) {
-    const min_completion_rate =
-      QuizConfig.minQuestionToAnswer / total_question_count;
-    // TODO - redefine colors better
-    if (percentage_completed < min_completion_rate) {
-      return "#F00";
-    }
-    return "#0F0";
-  }
-
   render() {
-    const divStyle = {minHeight: "10px"};
-    const progressStyle = {
-      backgroundColor: QuizProgressBar.getColor(
-        this.props.percentageCompleted,
-        this.props.totalQuestionCount,
-      ),
-      minWidth: (this.props.percentageCompleted.toFixed(4) * 100) + "%",
-      minHeight: "10px",
-      display: "inline-block",
-    };
-    console.log(this.props.percentageCompleted, this.props.totalQuestionCount);
     /* jshint ignore:start */
     return (
-      <div style={divStyle}>
-        <span style={progressStyle}>
-          {(this.props.percentageCompleted.toFixed(4) * 100)}%
+      <div className={"quiz-progress-bar"}>
+        <span>
+          {(this.props.percentage.toFixed(4) * 100)}%
         </span>
       </div>);
     /* jshint ignore:end */

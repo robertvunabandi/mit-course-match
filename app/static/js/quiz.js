@@ -31,7 +31,8 @@ function loadQuiz() {
       answers: [{ choice: "No", aid: 41 }, { choice: "Yes", aid: 31 }]
     }] });
   /* jshint ignore:end */
-  ReactDOM.render(quiz, document.querySelector("#" + APP.ids.root));
+
+  ReactDOM.render(quiz, document.querySelector("#" + APP.ids.content));
 }
 
 class Quiz extends React.Component {
@@ -56,21 +57,32 @@ class Quiz extends React.Component {
   }
 }
 
+/**
+ * the QuizState gives context about the state of the app so far.
+ * i.e., it provides percentage completed, whether one can submit
+ * questions for predictions (since one doesn't have to answer
+ * everything), etc. */
 class QuizState extends React.Component {
   // jshint ignore:line
   render() {
     /* jshint ignore:start */
     return React.createElement(
       "div",
-      null,
+      { className: "quiz-state" },
       React.createElement(
         "div",
         null,
-        "Your Progress: "
+        "Progress:"
       ),
-      React.createElement(QuizProgressBar, {
-        percentageCompleted: this.props.answered / this.props.total,
-        totalQuestionCount: this.props.total })
+      React.createElement(QuizProgressBar, { percentage: this.props.answered / this.props.total }),
+      React.createElement(
+        "div",
+        null,
+        "Answered ",
+        this.props.answered,
+        " out of ",
+        this.props.total
+      )
     );
     /* jshint ignore:end */
   }
@@ -78,35 +90,15 @@ class QuizState extends React.Component {
 
 class QuizProgressBar extends React.Component {
   // jshint ignore:line
-  constructor(props) {
-    super(props);
-  }
-  static getColor(percentage_completed, total_question_count) {
-    const min_completion_rate = QuizConfig.minQuestionToAnswer / total_question_count;
-    // TODO - redefine colors better
-    if (percentage_completed < min_completion_rate) {
-      return "#F00";
-    }
-    return "#0F0";
-  }
-
   render() {
-    const divStyle = { minHeight: "10px" };
-    const progressStyle = {
-      backgroundColor: QuizProgressBar.getColor(this.props.percentageCompleted, this.props.totalQuestionCount),
-      minWidth: this.props.percentageCompleted.toFixed(4) * 100 + "%",
-      minHeight: "10px",
-      display: "inline-block"
-    };
-    console.log(this.props.percentageCompleted, this.props.totalQuestionCount);
     /* jshint ignore:start */
     return React.createElement(
       "div",
-      { style: divStyle },
+      { className: "quiz-progress-bar" },
       React.createElement(
         "span",
-        { style: progressStyle },
-        this.props.percentageCompleted.toFixed(4) * 100,
+        null,
+        this.props.percentage.toFixed(4) * 100,
         "%"
       )
     );

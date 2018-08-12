@@ -19,6 +19,20 @@ body {
     #navigation-bar ul li + li {
       margin-left: 1rem; }
 
+#content {
+  padding: 1rem; }
+
+/* content styling just specific to the quiz */
+#content .quiz-state {
+  border: 1px solid black; }
+  #content .quiz-state .quiz-progress-bar {
+    border: 1px solid black;
+    border-radius: 100rem;
+    font-size: 0.5rem; }
+    #content .quiz-state .quiz-progress-bar span {
+      border-radius: 100rem;
+      background-color: red; }
+
 #footer {
   position: absolute;
   bottom: 0;

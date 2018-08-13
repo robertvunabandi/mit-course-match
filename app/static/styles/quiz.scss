@@ -2,6 +2,7 @@
 
 #content {
   .quiz {
+    margin: 0 auto; // center the quiz
     .quiz-state {
       border: 1px solid black;
       .quiz-progress-bar {
@@ -32,13 +33,39 @@
 }
 
 #content {
-  @media screen and (max-width: $screen-md) {
+  @media screen and (max-width: $screen-sm) {
     .quiz {
+      width: 100%;
+    }
+  }
+
+  @media screen and (min-width: $screen-sm) and (max-width: $screen-md) {
+    .quiz {
+      width: 65%;
     }
   }
 
   @media screen and (min-width: $screen-md) and (max-width: $screen-lg) {
     .quiz {
+      width: 55%;
+    }
+  }
+
+  @media screen and (min-width: $screen-lg) and (max-width: $screen-xl) {
+    .quiz {
+      width: 50%;
+    }
+  }
+
+  @media screen and (min-width: $screen-xl) and (max-width: $screen-xxl) {
+    .quiz {
+      width: 45%;
+    }
+  }
+
+  @media screen and (min-width: $screen-xxl) {
+    .quiz {
+      width: 40%;
     }
   }
 }

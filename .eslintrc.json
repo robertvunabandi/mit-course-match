@@ -1,0 +1,55 @@
+{
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "script",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "env": {
+    "es6": true,
+    "browser": true
+  },
+  "rules": {
+    // prohibits bitwise operators (&, |, ^, etc.)
+    "no-bitwise": 2,
+    // require {} for every new block or scope
+    "curly": [1, "all"],
+    // require using === or !== always
+    "eqeqeq": [2, "always"],
+    // require calling Object.prototype.hasOwnProperty.call(obj, key) in for in loops
+    "guard-for-in": 1,
+    // disallow calling obj.hasOwnProperty. Use Object.prototype.hasOwnProperty.call instead
+    "no-prototype-builtins": 1,
+    // required parentheses around imediately invoked functions
+    "wrap-iife": [2, "inside"],
+    // enforce comments' first word to be lowercase
+    "capitalized-comments": [1, "never"],
+    // prohibits empty blocks except for catch {}
+    "no-empty": [1, { "allowEmptyCatch": true }],
+    // prohibits the use of ++ and --
+    "no-plusplus": 1,
+    // enforce double quotations or backticks whenever needed
+    "quotes": [2, "double"],
+    // prevent the use of global variables unless declared
+    "no-undef": 2,
+    // force using strict at the beginning of the file (global param)
+    "strict": [2, "global"],
+    // enforce a maximum of 4 parameter per function
+    "max-params": [1, 4],
+    // enforce a maximum depth of 4 per function
+    "max-depth": [1, 4],
+    // enforce a maximum of 15 statements per function
+    "max-statement": [1, {"max": 15, "ignoreTopLevelFunctions": true}],
+    // enforce a maximum of 50 lines per functions
+    "max-lines-per-function": [1, 50],
+    // enforce a max length of 100 for code and 70 for commments
+    "max-len": [1, {"code": 100, "comments": 70, "ignoreUrls": true }],
+    // limit the max nested callbacks to 2
+    "max-nested-callbacks": [1, 2],
+    // require using let or const
+    "no-var": 2,
+    // require using a whitespace after a comment
+    "spaced-comment": [2, "always"]
+  }
+}

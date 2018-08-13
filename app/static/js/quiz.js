@@ -1,15 +1,16 @@
-/**
- * This is the mainDone quiz component block.
- * This block handles rendering and answering the questions.
- *
- * Some things to note:
- * - Storing question answers will be done externally.
- * - This quiz component will not know about who is answering the questions.
- *   It will store answers locally and the answers can be fetched from it.
- * - The quiz will take in questions and then manage itself with a few
- *   external endpoints to get answered questions and such.
- * */
 "use strict";
+/**
+ * this is the mainDone quiz component block.
+ * this block handles rendering and answering the questions.
+ *
+ * some things to note:
+ * - Storing question answers will be done externally.
+ * - This quiz component will not know about who is answering the
+ *   questions. It will store answers locally and the answers can
+ *   be fetched from it.
+ * - The quiz will take in questions and then manage itself with a
+ *   few external endpoints to get answered questions and such.
+ * */
 /* global React, ReactDOM, APP, UTIL */
 /* global RCSeparator, RCLineSeparator, RCPaddedLineSeparator */
 
@@ -21,7 +22,6 @@ window.addEventListener(APP.events.mainDone.type, loadQuiz);
 
 function loadQuiz() {
   // load questions via API call, todo - write API from 6.148
-  /* jshint ignore:start */
   const quiz = React.createElement(Quiz, { questions: [{
       question: "hello there",
       qid: 35,
@@ -31,13 +31,11 @@ function loadQuiz() {
       qid: 24,
       choices: [{ choice: "No", aid: 41 }, { choice: "Yes", aid: 31 }]
     }] });
-  /* jshint ignore:end */
 
   ReactDOM.render(quiz, document.querySelector("#" + APP.ids.content));
 }
 
 class Quiz extends React.Component {
-  // jshint ignore:line
   constructor(props) {
     super(props);
     const self = this;
@@ -63,9 +61,9 @@ class Quiz extends React.Component {
   }
 
   /**
-   * picks, among the questions that are not answered, one at random and
-   * returns its index. if no unanswered question is found, this will
-   * return -1.
+   * picks, among the questions that are not answered, one at random
+   * and returns its index. if no unanswered question is found, this
+   * will return -1.
    *
    * @return int
    * */
@@ -75,7 +73,6 @@ class Quiz extends React.Component {
 
   render() {
     const question = this.state.questions[this.getUnansweredQuestionIndex()];
-    /* jshint ignore:start */
     return React.createElement(
       "div",
       { className: "quiz" },
@@ -87,7 +84,6 @@ class Quiz extends React.Component {
         choices: question.choices
       })
     );
-    /* jshint ignore:end */
   }
 }
 
@@ -97,9 +93,7 @@ class Quiz extends React.Component {
  * questions for predictions (since one doesn't have to answer
  * everything), etc. */
 class QuizState extends React.Component {
-  // jshint ignore:line
   render() {
-    /* jshint ignore:start */
     return React.createElement(
       "div",
       { className: "quiz-state" },
@@ -118,14 +112,11 @@ class QuizState extends React.Component {
         this.props.total
       )
     );
-    /* jshint ignore:end */
   }
 }
 
 class QuizProgressBar extends React.Component {
-  // jshint ignore:line
   render() {
-    /* jshint ignore:start */
     return React.createElement(
       "div",
       { className: "quiz-progress-bar" },
@@ -136,22 +127,19 @@ class QuizProgressBar extends React.Component {
         "%"
       )
     );
-    /* jshint ignore:end */
   }
 }
 
 /**
- * with the question display, we display one question at a time that is
- * passed in as a parameter.
+ * with the question display, we display one question at a time that
+ * is passed in as a parameter.
  * */
 class QuizQuestionDisplay extends React.Component {
-  // jshint ignore:line
   constructor(props) {
     super(props);
   }
 
   render() {
-    /* jshint ignore:start */
     return React.createElement(
       "span",
       { className: "quiz-question-display" },
@@ -167,14 +155,11 @@ class QuizQuestionDisplay extends React.Component {
         })
       )
     );
-    /* jshint ignore:end */
   }
 }
 
 class QuizQuestion extends React.Component {
-  // jshint ignore:line
   render() {
-    /* jshint ignore:start */
     return React.createElement(
       "span",
       { className: "quiz-question" },
@@ -185,33 +170,26 @@ class QuizQuestion extends React.Component {
         this.props.question
       )
     );
-    /* jshint ignore:end */
   }
 }
 
 class QuizQuestionQSymbol extends React.Component {
-  // jshint ignore:line
   render() {
-    /* jshint ignore:start */
-    // TODO - create this symbol
+    // todo - create this symbol
     return React.createElement(
       "span",
       { className: "quiz-question-q-symbol" },
       "QSymbol"
     );
-    /* jshint ignore:end */
   }
 }
 
 class QuizAnswerChoice extends React.Component {
-  // jshint ignore:line
   render() {
-    /* jshint ignore:start */
     return React.createElement(
       "span",
       { className: "quiz-answer-choice" },
       this.props.choice
     );
-    /* jshint ignore:end */
   }
 }

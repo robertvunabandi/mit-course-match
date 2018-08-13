@@ -1,22 +1,21 @@
-/*
+"use strict";
+/**
  * This is the main js file that will have parameters that are shared
  * with every pages. This js file must be loaded in every html page.
  * */
-"use strict";
 
 // the main function is declared at the end of this file
 window.addEventListener("load", main);
 
 /**
- * APP contains constants used throughout the application.
+ * contains constants used throughout the application
  * */
-
 const APP = {
   // custom HTML events that can be triggered by the application
   events: {
     mainDone: new Event("mit-course-match-loaded"),
   },
-  // HTML ids of various elements
+  // ids of various HTML elements
   ids: {
     navigationBar: "navigation-bar",
     content: "content",
@@ -44,19 +43,14 @@ UTIL.randomFromList = function (list) {
  * all these class will start with the prefix "RC", which stands
  * for "Reusable Component". */
 function RCSeparator() {
-  /* jshint ignore:start */
   return <div className={"rc-separator"}></div>;
-  /* jshint ignore:end */
 }
 
 function RCLineSeparator() {
-  /* jshint ignore:start */
   return <div className={"rc-line-separator"}></div>;
-  /* jshint ignore:end */
 }
 
 function RCPaddedLineSeparator() {
-  /* jshint ignore:start */
   return (
     <span>
       <RCSeparator/>
@@ -64,7 +58,6 @@ function RCPaddedLineSeparator() {
       <RCSeparator/>
     </span>
   );
-  /* jshint ignore:end */
 }
 
 function main() {

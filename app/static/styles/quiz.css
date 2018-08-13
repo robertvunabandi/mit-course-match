@@ -1,0 +1,39 @@
+/* colors. Using numbers for conciseness. */
+/* various screen sizes */
+#content .quiz {
+  margin: 0 auto; }
+  #content .quiz .quiz-state {
+    border: 1px solid black; }
+    #content .quiz .quiz-state .quiz-progress-bar {
+      border: 1px solid black;
+      border-radius: 100rem;
+      font-size: 0.5rem; }
+      #content .quiz .quiz-state .quiz-progress-bar span {
+        border-radius: 100rem;
+        background-color: red; }
+  #content .quiz .quiz-question-display .quiz-question .quiz-question-q-symbol {
+    display: block;
+    font-weight: 900; }
+  #content .quiz .quiz-question-display .quiz-choices {
+    display: block; }
+
+@media screen and (max-width: 576px) {
+  #content .quiz {
+    width: 100%; } }
+@media screen and (min-width: 576px) and (max-width: 768px) {
+  #content .quiz {
+    width: 65%; } }
+@media screen and (min-width: 768px) and (max-width: 992px) {
+  #content .quiz {
+    width: 55%; } }
+@media screen and (min-width: 992px) and (max-width: 1200px) {
+  #content .quiz {
+    width: 50%; } }
+@media screen and (min-width: 1200px) and (max-width: 1536px) {
+  #content .quiz {
+    width: 45%; } }
+@media screen and (min-width: 1536px) {
+  #content .quiz {
+    width: 40%; } }
+
+/*# sourceMappingURL=quiz.css.map */

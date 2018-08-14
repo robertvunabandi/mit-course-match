@@ -14,12 +14,13 @@ from app.classifier.custom_types import (
 	MSID,
 	QSID
 )
+from app.db.mit_courses import mit_courses
 
 
 def _commit(method: Callable) -> Callable:
 	"""
-	decorator: calls cnx._commit() at the end of query in order to make the
-	changes caused by the query to be permanent in the DB.
+	decorator: calls cnx._commit() at the end of query in order to
+	make the changes caused by the query to be permanent in the DB.
 	:param method:
 		method that calls an SQL query that makes changes to the data
 	:return: method decorated with cnx.commit()
@@ -35,9 +36,117 @@ def _commit(method: Callable) -> Callable:
 
 @_commit
 def initialize_database() -> None:
-	# todo - add method to create the tables from scratch (if not exists)
-	# when testing, deactivate the @_commit decorator
-	raise NotImplementedError
+	"""
+	when the database is just loaded, we need to make sure that all
+	the tables are created in the db. with this method, we will not
+	need to manually create tables every time we change db: it will
+	just create them at initialization.
+	:return: void
+	"""
+	# todo - test this method before using it !!!
+	courses_data = (
+		TBL.Courses,
+		TBLCol.course_id,
+		TBLCol.course_number,
+		TBLCol.course_name
+	)
+	cursor.execute("""
+		CREATE TABLE IF NOT EXISTS %s (
+			%s SERIAL,
+			%s TINYTEXT,
+			%s TINYTEXT
+		);
+	""" % courses_data)
+	cursor.execute("""
+		CREATE TABLE IF NOT EXISTS Questions (
+			%s SERIAL,
+			%s TEXT
+		);
+	""" % (TBLCol.question_id, TBLCol.question))
+	answer_choices_query_data = (
+		TBL.AnswerChoices,
+		TBLCol.answer_id,
+		TBLCol.question_id,
+		TBLCol.choice,
+		TBLCol.vector,
+		TBLCol.question_id,
+		TBL.Questions,
+	)
+	cursor.execute("""
+		CREATE TABLE IF NOT EXISTS %s (
+			%s SERIAL,
+			%s UNSIGNED BIGINT,
+			%s TEXT, 
+			%s TEXT,
+			CONSTRAINT fk_answer_choices_to_question_id 
+				FOREIGN KEY (%s)
+				REFERENCES %s 
+				ON DELETE CASCADE
+		);
+	""" % answer_choices_query_data)
+	responses_data = (
+		TBL.Responses,
+		TBLCol.response_id,
+		TBLCol.course_id,
+		TBLCol.course_name,
+		TBLCol.time_created,
+	)
+	cursor.execute("""
+		CREATE TABLE IF NOT EXISTS %s (
+			%s SERIAL,
+			%s UNSIGNED BIGINT,
+			-- the course name is extremely unlikely to change over
+			-- a long time. so having that as a safe reference key 
+			-- for the course is needed whereas course ids are 
+			-- arbitrary 
+			%s TINYTEXT,
+			%s DATETIME(6)
+		);
+	""" % responses_data)
+	response_mappings_query_data = (
+		TBL.ResponseMappings,
+		TBLCol.response_id,
+		TBLCol.question_id,
+		TBLCol.answer_id,
+		TBLCol.response_id,
+		TBL.Responses,
+		TBLCol.question_id,
+		TBL.Questions,
+		TBLCol.answer_id,
+		TBL.AnswerChoices,
+	)
+	cursor.execute("""
+		CREATE TABLE IF NOT EXISTS %s (
+			%s UNSIGNED BIGINT,
+			%s UNSIGNED BIGINT,
+			%s UNSIGNED BIGINT,
+			CONSTRAINT fk_response_mappings_to_response_id 
+				FOREIGN KEY (%s)
+				REFERENCES %s 
+				ON DELETE CASCADE,
+			CONSTRAINT fk_response_mappings_to_question_id 
+				FOREIGN KEY (%s)
+				REFERENCES %s 
+				ON DELETE CASCADE,
+			CONSTRAINT fk_response_mappings_to_answer_id
+				FOREIGN KEY (%s)
+				REFERENCES %s 
+				ON DELETE CASCADE
+		);
+	""" % response_mappings_query_data)
+
+	# populate courses with the data we have in mit_courses.py
+	course_population_data = (
+		TBL.Courses,
+		TBLCol.course_number,
+		TBLCol.course_name,
+		",".join(
+			["(" + ",".join(course_row) + ")" for course_row in mit_courses]
+		),
+	)
+	cursor.execute("""
+		INSERT INTO %s (%s, %s) VALUES %s;
+	""" % course_population_data)
 
 
 class _DB:
@@ -480,6 +589,9 @@ load_courses = _DB.load_courses
 store_response_set = _DB.store_response_set
 load_question_set_responses = _DB.load_question_set_responses
 load_response = _DB.load_response
+
+# initialize the database
+# initialize_database() # TODO - uncomment this when tested
 
 if __name__ == '__main__':
 	# cursor.execute('SELECT * FROM Questions WHERE question = \'coffee?\';')

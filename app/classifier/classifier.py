@@ -1,5 +1,4 @@
 from typing import List, Tuple, Any, Dict
-
 from app.classifier.custom_types import (
 	SChoice,
 	SQuestion,

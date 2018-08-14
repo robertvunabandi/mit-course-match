@@ -2,9 +2,19 @@ from app.classifier import utils
 import numpy as np
 from typing import Iterable, Tuple, List, Dict, Set
 from app.db import database
-from app.classifier.custom_types import \
-	Vector, SCourseNumber, SCourse, \
-	QID, AID, CID, RID, QSID, MSID, SQuestion, SChoice
+from app.classifier.custom_types import (
+	Vector,
+	SCourseNumber,
+	SCourse,
+	QID,
+	AID,
+	CID,
+	RID,
+	QSID,
+	MSID,
+	SQuestion,
+	SChoice
+)
 
 
 # ------------------------------------------------------------
@@ -139,7 +149,7 @@ class QuestionAnswerManager:
 		for qid, index in ordered_qids_by_index:
 			if index == 0:
 				continue
-			prev_qid = ordered_qids_by_index[index-1][0]
+			prev_qid = ordered_qids_by_index[index - 1][0]
 			prev_qid_dim = input_dimension_contributions[prev_qid]
 			# this will only apply to the very first element, which
 			# automatically will then get the index 0 as needed
@@ -291,8 +301,6 @@ class DataManager:
 	def course_ids(self) -> Iterable[CID]:
 		yield from self.course_obj.course_ids()
 
-# ------------------------------------------------------------
-# ------------------------------------------------------------
 
 if __name__ == '__main__':
 	dp = DataManager(QSID(3), MSID(2))

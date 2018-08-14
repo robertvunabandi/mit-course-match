@@ -16,9 +16,6 @@ from app.classifier.custom_types import (
 )
 
 
-# todo - add ways to prevent db injections, so sanitize inputs
-
-# 		 so that online migration is easy
 def _commit(method: Callable) -> Callable:
 	"""
 	decorator: calls cnx._commit() at the end of query in order to make the

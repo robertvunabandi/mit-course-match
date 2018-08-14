@@ -2,8 +2,18 @@ from app.classifier import utils
 from app.db.sql import cursor, cnx
 from app.db.sql_constants import TBL, TBLCol
 from typing import List, Callable, Tuple, Set, Dict
-from app.classifier.custom_types import \
-	SChoice, SQuestion, SCourseNumber, SCourse, QID, AID, CID, RID, MSID, QSID
+from app.classifier.custom_types import (
+	SChoice,
+	SQuestion,
+	SCourseNumber,
+	SCourse,
+	QID,
+	AID,
+	CID,
+	RID,
+	MSID,
+	QSID
+)
 
 
 # todo - add ways to prevent db injections, so sanitize inputs

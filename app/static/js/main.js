@@ -61,6 +61,10 @@ function RCPaddedLineSeparator() {
   );
 }
 
+/**
+ * the main function call. this gets called at the start of every
+ * page in this app.
+ * */
 function main() {
   window.dispatchEvent(APP.events.mainDone);
 }

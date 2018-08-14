@@ -58,11 +58,11 @@ def initialize_database() -> None:
 		);
 	""" % courses_data)
 	cursor.execute("""
-		CREATE TABLE IF NOT EXISTS Questions (
+		CREATE TABLE IF NOT EXISTS %s (
 			%s SERIAL,
 			%s TEXT
 		);
-	""" % (TBLCol.question_id, TBLCol.question))
+	""" % (TBL.Questions, TBLCol.question_id, TBLCol.question))
 	answer_choices_query_data = (
 		TBL.AnswerChoices,
 		TBLCol.answer_id,

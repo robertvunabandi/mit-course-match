@@ -602,9 +602,6 @@ store_response_set = _DB.store_response_set
 load_question_set_responses = _DB.load_question_set_responses
 load_response = _DB.load_response
 
-# initialize the database
-# initialize_database()
-
 if __name__ == '__main__':
 	# cursor.execute('SELECT * FROM Questions WHERE question = \'coffee?\';')
 	# print(cursor.fetchall())

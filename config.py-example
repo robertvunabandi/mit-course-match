@@ -20,3 +20,6 @@ SQL_PASSWORD = ""
 
 # SQL database uri
 SQL_DATABASE = ""
+
+# SQL test database uri
+SQL_TEST_DATABASE = ""

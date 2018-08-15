@@ -151,14 +151,18 @@ class TestDatabase(unittest.TestCase):
 		# initialize again
 		database.initialize_database()
 		# check that data was not removed
-		database.cursor.execute("SELECT * FROM %s" % TBL.Questions)
+		database.cursor.execute("SELECT %s FROM %s" % (TBLCol.question, TBL.Questions))
+		question = database.cursor.fetchall()[0][0]
 		self.assertTrue(
-			database.cursor.fetchall()[0][0] == "Coffee",
-			"question 'Coffee' was not found in db"
+			question == "Coffee", "question 'Coffee' was not found in db"
 		)
-		database.cursor.execute("SELECT * FROM %s" % TBL.AnswerChoices)
+		answer_choice_query_data = (
+			TBLCol.question_id, TBLCol.choice, TBLCol.vector, TBL.AnswerChoices
+		)
+		database.cursor.execute("SELECT %s, %s, %s FROM %s" % answer_choice_query_data)
+		row = database.cursor.fetchall()[0]
 		self.assertTrue(
-			database.cursor.fetchall()[0] == (1, "Yo", "1,4"),
+			row == (1, "Yo", "1,4"),
 			"answer choice %s was not found in db" % str((1, "Yo", "1,4"))
 		)
 

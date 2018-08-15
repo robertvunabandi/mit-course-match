@@ -15,7 +15,7 @@ from app.classifier.custom_types import (
 	QSID
 )
 from app.db.mit_courses import mit_courses
-import app.classifier.utils as util
+import mysql.connector.errors
 
 
 def _commit(method: Callable) -> Callable:
@@ -108,30 +108,37 @@ def initialize_database() -> None:
 		);
 	""" % response_mappings_query_data)
 	# add table constraints on answer choices and response mappings
-	cursor.execute("""
-		ALTER TABLE %s
-		ADD CONSTRAINT fk_answer_choices_to_question_id FOREIGN KEY (%s)
-		REFERENCES %s (%s)
-		ON DELETE CASCADE;
-	""" % (TBL.AnswerChoices, TBLCol.question_id, TBL.Questions, TBLCol.question_id))
-	cursor.execute("""
-		ALTER TABLE %s
-		ADD CONSTRAINT fk_response_mappings_to_response_id FOREIGN KEY (%s)
-		REFERENCES %s (%s)
-		ON DELETE CASCADE;
-	""" % (TBL.ResponseMappings, TBLCol.response_id, TBL.Responses, TBLCol.response_id))
-	cursor.execute("""
-		ALTER TABLE %s
-		ADD CONSTRAINT fk_response_mappings_to_question_id FOREIGN KEY (%s)
-		REFERENCES %s (%s)
-		ON DELETE CASCADE;
-	""" % (TBL.ResponseMappings, TBLCol.question_id, TBL.Questions, TBLCol.question_id))
-	cursor.execute("""
-		ALTER TABLE %s
-		ADD CONSTRAINT fk_response_mappings_to_answer_id FOREIGN KEY (%s)
-		REFERENCES %s (%s)
-		ON DELETE CASCADE;
-	""" % (TBL.ResponseMappings, TBLCol.answer_id, TBL.AnswerChoices, TBLCol.answer_id))
+	fk_insertion_data = [
+		[
+			"fk_answer_choices_to_question_id",
+			(TBL.AnswerChoices, TBLCol.question_id, TBL.Questions, TBLCol.question_id)
+		],
+		[
+			"fk_response_mappings_to_response_id",
+			(TBL.ResponseMappings, TBLCol.response_id, TBL.Responses, TBLCol.response_id)
+		],
+		[
+			"fk_response_mappings_to_question_id",
+			(TBL.ResponseMappings, TBLCol.question_id, TBL.Questions, TBLCol.question_id)
+		],
+		[
+			"fk_response_mappings_to_answer_id",
+			(TBL.ResponseMappings, TBLCol.answer_id, TBL.AnswerChoices, TBLCol.answer_id)
+		]
+	]
+	for fk, fk_data in fk_insertion_data:
+		query_data = (fk_data[0],) + (fk,) + fk_data[1:]
+		try:
+			cursor.execute("""
+				ALTER TABLE %s
+				ADD CONSTRAINT %s FOREIGN KEY (%s)
+				REFERENCES %s (%s)
+				ON DELETE CASCADE;
+			""" % query_data)
+		except mysql.connector.errors.IntegrityError:
+			# integrity error means we ran into the duplicate key,
+			# so table already had it
+			pass
 
 	# populate courses with the data we have in mit_courses.py
 	course_population_data = (

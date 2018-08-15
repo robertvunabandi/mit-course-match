@@ -15,6 +15,7 @@ from app.classifier.custom_types import (
 	QSID
 )
 from app.db.mit_courses import mit_courses
+import app.classifier.utils as util
 
 
 def _commit(method: Callable) -> Callable:
@@ -45,10 +46,7 @@ def initialize_database() -> None:
 	"""
 	# todo - test this method before using it !!!
 	courses_data = (
-		TBL.Courses,
-		TBLCol.course_id,
-		TBLCol.course_number,
-		TBLCol.course_name
+		TBL.Courses, TBLCol.course_id, TBLCol.course_number, TBLCol.course_name
 	)
 	cursor.execute("""
 		CREATE TABLE IF NOT EXISTS %s (
@@ -69,19 +67,13 @@ def initialize_database() -> None:
 		TBLCol.question_id,
 		TBLCol.choice,
 		TBLCol.vector,
-		TBLCol.question_id,
-		TBL.Questions,
 	)
 	cursor.execute("""
 		CREATE TABLE IF NOT EXISTS %s (
 			%s SERIAL,
-			%s UNSIGNED BIGINT,
+			%s BIGINT UNSIGNED,
 			%s TEXT, 
-			%s TEXT,
-			CONSTRAINT fk_answer_choices_to_question_id 
-				FOREIGN KEY (%s)
-				REFERENCES %s 
-				ON DELETE CASCADE
+			%s TEXT
 		);
 	""" % answer_choices_query_data)
 	responses_data = (
@@ -94,7 +86,7 @@ def initialize_database() -> None:
 	cursor.execute("""
 		CREATE TABLE IF NOT EXISTS %s (
 			%s SERIAL,
-			%s UNSIGNED BIGINT,
+			%s BIGINT UNSIGNED,
 			-- the course name is extremely unlikely to change over
 			-- a long time. so having that as a safe reference key 
 			-- for the course is needed whereas course ids are 
@@ -108,32 +100,39 @@ def initialize_database() -> None:
 		TBLCol.response_id,
 		TBLCol.question_id,
 		TBLCol.answer_id,
-		TBLCol.response_id,
-		TBL.Responses,
-		TBLCol.question_id,
-		TBL.Questions,
-		TBLCol.answer_id,
-		TBL.AnswerChoices,
 	)
 	cursor.execute("""
 		CREATE TABLE IF NOT EXISTS %s (
-			%s UNSIGNED BIGINT,
-			%s UNSIGNED BIGINT,
-			%s UNSIGNED BIGINT,
-			CONSTRAINT fk_response_mappings_to_response_id 
-				FOREIGN KEY (%s)
-				REFERENCES %s 
-				ON DELETE CASCADE,
-			CONSTRAINT fk_response_mappings_to_question_id 
-				FOREIGN KEY (%s)
-				REFERENCES %s 
-				ON DELETE CASCADE,
-			CONSTRAINT fk_response_mappings_to_answer_id
-				FOREIGN KEY (%s)
-				REFERENCES %s 
-				ON DELETE CASCADE
+			%s BIGINT UNSIGNED,
+			%s BIGINT UNSIGNED,
+			%s BIGINT UNSIGNED
 		);
 	""" % response_mappings_query_data)
+	# add table constraints on answer choices and response mappings
+	cursor.execute("""
+		ALTER TABLE %s
+		ADD CONSTRAINT fk_answer_choices_to_question_id FOREIGN KEY (%s)
+		REFERENCES %s (%s)
+		ON DELETE CASCADE;
+	""" % (TBL.AnswerChoices, TBLCol.question_id, TBL.Questions, TBLCol.question_id))
+	cursor.execute("""
+		ALTER TABLE %s
+		ADD CONSTRAINT fk_response_mappings_to_response_id FOREIGN KEY (%s)
+		REFERENCES %s (%s)
+		ON DELETE CASCADE;
+	""" % (TBL.ResponseMappings, TBLCol.response_id, TBL.Responses, TBLCol.response_id))
+	cursor.execute("""
+		ALTER TABLE %s
+		ADD CONSTRAINT fk_response_mappings_to_question_id FOREIGN KEY (%s)
+		REFERENCES %s (%s)
+		ON DELETE CASCADE;
+	""" % (TBL.ResponseMappings, TBLCol.question_id, TBL.Questions, TBLCol.question_id))
+	cursor.execute("""
+		ALTER TABLE %s
+		ADD CONSTRAINT fk_response_mappings_to_answer_id FOREIGN KEY (%s)
+		REFERENCES %s (%s)
+		ON DELETE CASCADE;
+	""" % (TBL.ResponseMappings, TBLCol.answer_id, TBL.AnswerChoices, TBLCol.answer_id))
 
 	# populate courses with the data we have in mit_courses.py
 	course_population_data = (
@@ -141,7 +140,9 @@ def initialize_database() -> None:
 		TBLCol.course_number,
 		TBLCol.course_name,
 		",".join(
-			["(" + ",".join(course_row) + ")" for course_row in mit_courses]
+			["(" + ",".join(
+				[utils.quote(s) for s in course_row]
+			) + ")" for course_row in mit_courses]
 		),
 	)
 	cursor.execute("""

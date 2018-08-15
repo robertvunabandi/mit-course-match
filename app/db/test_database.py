@@ -4,6 +4,7 @@ import mysql.connector
 from typing import Callable
 from app.db.sql_constants import TBL, TBLCol
 import app.db.database as database
+import app.classifier.utils as utils
 
 
 def setup():
@@ -49,11 +50,11 @@ def commit(method: Callable, db_cnx) -> Callable:
 class TestDatabase(unittest.TestCase):
 	# setups
 	TABLES = (
-		TBL.Courses,
-		TBL.Questions,
-		TBL.AnswerChoices,
+		TBL.ResponseMappings,
 		TBL.Responses,
-		TBL.ResponseMappings
+		TBL.AnswerChoices,
+		TBL.Questions,
+		TBL.Courses,
 	)
 
 	def setUp(self):
@@ -73,14 +74,14 @@ class TestDatabase(unittest.TestCase):
 			database.cnx.commit()
 
 		tables = TestDatabase.get_tables()
-		print(tables)
+		print('[TestDatabaseLog:tables-after-drop]', tables)
 		assert len(tables) == 0, \
 			"some tables are still in db. see print statement"
 
 	@staticmethod
 	def get_tables():
 		database.cursor.execute("SHOW TABLES")
-		return database.cursor.fetchall()
+		return [row[0].lower() for row in database.cursor.fetchall()]
 
 	def tearDown(self):
 		TestDatabase.drop_all_tables()

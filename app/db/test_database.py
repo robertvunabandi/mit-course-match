@@ -48,6 +48,13 @@ def commit(method: Callable, db_cnx) -> Callable:
 
 class TestDatabase(unittest.TestCase):
 	# setups
+	TABLES = (
+		TBL.Courses,
+		TBL.Questions,
+		TBL.AnswerChoices,
+		TBL.Responses,
+		TBL.ResponseMappings
+	)
 
 	def setUp(self):
 		try:
@@ -61,15 +68,19 @@ class TestDatabase(unittest.TestCase):
 
 	@staticmethod
 	def drop_all_tables():
-		print("HEY!")
-		for table in [
-			TBL.Courses,
-			TBL.Questions,
-			TBL.AnswerChoices,
-			TBL.Responses,
-			TBL.ResponseMappings
-		]:
+		for table in TestDatabase.TABLES:
 			database.cursor.execute("DROP TABLE IF EXISTS %s" % table)
+			database.cnx.commit()
+
+		tables = TestDatabase.get_tables()
+		print(tables)
+		assert len(tables) == 0, \
+			"some tables are still in db. see print statement"
+
+	@staticmethod
+	def get_tables():
+		database.cursor.execute("SHOW TABLES")
+		return database.cursor.fetchall()
 
 	def tearDown(self):
 		TestDatabase.drop_all_tables()
@@ -77,7 +88,17 @@ class TestDatabase(unittest.TestCase):
 	# tests
 
 	def test_initialize(self):
-		print("Hi")
+		try:
+			database.initialize_database()
+		except Exception as exception:
+			print(exception)
+			self.fail("initialization raised an error")
+		tables = TestDatabase.get_tables()
+		for table in [db_table.lower() for db_table in TestDatabase.TABLES]:
+			self.assertTrue(
+				table in tables,
+				"table %s is missing from tables" % table
+			)
 
 
 if __name__ == '__main__':

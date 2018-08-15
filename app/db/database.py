@@ -44,22 +44,25 @@ def initialize_database() -> None:
 	just create them at initialization.
 	:return: void
 	"""
+	# create courses table
 	courses_data = (
 		TBL.Courses, TBLCol.course_id, TBLCol.course_number, TBLCol.course_name
 	)
 	cursor.execute("""
 		CREATE TABLE IF NOT EXISTS %s (
 			%s SERIAL,
-			%s TINYTEXT,
-			%s TINYTEXT
+			%s TINYTEXT NOT NULL,
+			%s TINYTEXT NOT NULL
 		);
 	""" % courses_data)
+	# create questions table
 	cursor.execute("""
 		CREATE TABLE IF NOT EXISTS %s (
 			%s SERIAL,
-			%s TEXT
+			%s TEXT NOT NULL
 		);
 	""" % (TBL.Questions, TBLCol.question_id, TBLCol.question))
+	# create answer choices table
 	answer_choices_query_data = (
 		TBL.AnswerChoices,
 		TBLCol.answer_id,
@@ -70,11 +73,12 @@ def initialize_database() -> None:
 	cursor.execute("""
 		CREATE TABLE IF NOT EXISTS %s (
 			%s SERIAL,
-			%s BIGINT UNSIGNED,
-			%s TEXT, 
-			%s TEXT
+			%s BIGINT UNSIGNED NOT NULL,
+			%s TEXT NOT NULL, 
+			%s TEXT NOT NULL
 		);
 	""" % answer_choices_query_data)
+	# create response table
 	responses_data = (
 		TBL.Responses,
 		TBLCol.response_id,
@@ -85,7 +89,7 @@ def initialize_database() -> None:
 	cursor.execute("""
 		CREATE TABLE IF NOT EXISTS %s (
 			%s SERIAL,
-			%s BIGINT UNSIGNED,
+			%s BIGINT UNSIGNED NOT NULL,
 			-- the course name is extremely unlikely to change over
 			-- a long time. so having that as a safe reference key 
 			-- for the course is needed whereas course ids are 
@@ -94,6 +98,7 @@ def initialize_database() -> None:
 			%s DATETIME(6)
 		);
 	""" % responses_data)
+	# create response mappings table
 	response_mappings_query_data = (
 		TBL.ResponseMappings,
 		TBLCol.response_id,
@@ -102,12 +107,12 @@ def initialize_database() -> None:
 	)
 	cursor.execute("""
 		CREATE TABLE IF NOT EXISTS %s (
-			%s BIGINT UNSIGNED,
-			%s BIGINT UNSIGNED,
-			%s BIGINT UNSIGNED
+			%s BIGINT UNSIGNED NOT NULL,
+			%s BIGINT UNSIGNED NOT NULL,
+			%s BIGINT UNSIGNED NOT NULL
 		);
 	""" % response_mappings_query_data)
-	# add table constraints on answer choices and response mappings
+	# add ON DELETE table constraints on answer choices and response mappings
 	fk_insertion_data = [
 		[
 			"fk_answer_choices_to_question_id",

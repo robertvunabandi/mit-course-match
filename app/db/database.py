@@ -44,7 +44,6 @@ def initialize_database() -> None:
 	just create them at initialization.
 	:return: void
 	"""
-	# todo - test this method before using it !!!
 	courses_data = (
 		TBL.Courses, TBLCol.course_id, TBLCol.course_number, TBLCol.course_name
 	)
@@ -592,7 +591,7 @@ load_question_set_responses = _DB.load_question_set_responses
 load_response = _DB.load_response
 
 # initialize the database
-# initialize_database() # TODO - uncomment this when tested
+# initialize_database()
 
 if __name__ == '__main__':
 	# cursor.execute('SELECT * FROM Questions WHERE question = \'coffee?\';')

@@ -3,28 +3,28 @@ import app.classifier.question_store as qs
 
 
 class TestQuestionStore(unittest.TestCase):
-	def test_assert_method_01_should_raise(self):
+	def test_assert_valid_inputs_01_should_raise(self):
 		try:
 			qs.QuestionStore.assert_valid_inputs(None, None)
 			self.fail("should have failed because of bad inputs")
 		except AssertionError:
 			pass
 
-	def test_assert_method_02_should_raise(self):
+	def test_assert_valid_inputs_02_should_raise(self):
 		try:
 			qs.QuestionStore.assert_valid_inputs('hello', ['dug', [1, 4]])
 			self.fail("should have failed because of bad inputs")
 		except AssertionError:
 			pass
 
-	def test_assert_method_03_should_raise(self):
+	def test_assert_valid_inputs_03_should_raise(self):
 		try:
 			qs.QuestionStore.assert_valid_inputs('chocolate', [('yes', [1, 2])])
 			self.fail("should have failed because need at least 2 choices")
 		except AssertionError:
 			pass
 
-	def test_assert_method_04_should_raise(self):
+	def test_assert_valid_inputs_04_should_raise(self):
 		m = "should have failed because inconsistent dimensions across choices"
 		try:
 			qs.QuestionStore.assert_valid_inputs(
@@ -35,7 +35,7 @@ class TestQuestionStore(unittest.TestCase):
 		except AssertionError:
 			pass
 
-	def test_assert_method_05_should_raise(self):
+	def test_assert_valid_inputs_05_should_raise(self):
 		try:
 			qs.QuestionStore.assert_valid_inputs(
 				'chocolate',
@@ -45,7 +45,7 @@ class TestQuestionStore(unittest.TestCase):
 		except AssertionError:
 			pass
 
-	def test_assert_method_01_should_pass(self):
+	def test_assert_valid_inputs_01_should_pass(self):
 		try:
 			qs.QuestionStore.assert_valid_inputs(
 				'chocolate',
@@ -55,7 +55,7 @@ class TestQuestionStore(unittest.TestCase):
 			print(e)
 			self.fail("should not fail")
 
-	def test_assert_method_02_should_pass(self):
+	def test_assert_valid_inputs_02_should_pass(self):
 		try:
 			qs.QuestionStore.assert_valid_inputs(
 				'chocolate',
@@ -64,6 +64,18 @@ class TestQuestionStore(unittest.TestCase):
 		except AssertionError as e:
 			print(e)
 			self.fail("should not fail")
+
+	def test_store_question_01_should_fail(self):
+		self.fail("test not implemented")
+
+	def test_store_question_02_should_fail(self):
+		self.fail("test not implemented")
+
+	def test_store_question_01_should_pass(self):
+		self.fail("test not implemented")
+
+	def test_store_question_02_should_pass(self):
+		self.fail("test not implemented")
 
 
 if __name__ == '__main__':

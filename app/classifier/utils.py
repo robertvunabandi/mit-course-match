@@ -175,7 +175,7 @@ def log_error(text: Union[str, List[str]]) -> None:
 def log_notice(text: Union[str, List[str]]) -> None:
 	if type(text) == list:
 		for t in text:
-			print(Color.yellow(text))
+			print(Color.yellow(t))
 	else:
 		print(Color.yellow(text))
 

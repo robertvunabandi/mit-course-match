@@ -111,6 +111,11 @@ class SChoice(SpecialString):
 		return 'AnswerChoice:' + super(SChoice, self).__repr__()
 
 
+class SVector(SpecialString):
+	def __repr__(self):
+		return 'ChoiceVector:' + super(SVector, self).__repr__()
+
+
 class SCourseNumber(SpecialString):
 	def __repr__(self):
 		return 'CourseNumber:' + super(SCourseNumber, self).__repr__()

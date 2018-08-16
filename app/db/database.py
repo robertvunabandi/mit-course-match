@@ -168,6 +168,9 @@ class _DB:
 	are called from the caller.
 	"""
 
+	# AS OF RIGHT NOW, ANYTHING IN CLASS _DB BELOW THIS LINE IS GARBAGE
+	# TODO - REMAKE METHODS FOR NEW
+
 	@staticmethod
 	@_commit
 	def store_response_set(

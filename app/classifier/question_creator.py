@@ -1,8 +1,20 @@
 from app.classifier import utils
 from app.db import database
 from typing import Iterable, List, Tuple
-from app.classifier.custom_types import SQuestion, SChoice
+from app.classifier.custom_types import SQuestion, SChoice, SVector, QID
 
+
+def store_question(
+		question: str,
+		answer_choices: List[Tuple[str, List[int]]]
+) -> Tuple[QID, SQuestion, List[Tuple[SChoice, List[int]]]]:
+	assert type(question) == str, "question must be a string"
+	assert type(answer_choices) == list, "answer_choice must be a list"
+	pass
+
+
+# =========
+# =========
 
 class Question:
 	"""

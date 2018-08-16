@@ -5,21 +5,26 @@ from app.classifier.custom_types import SQuestion, SChoice, SVector, QID
 
 
 class QuestionStore:
-
+	"""
+	Store question and its answers and vector mapping one question
+	at a time.
+	"""
 	@staticmethod
 	def store_question(
 			question: str,
 			answer_choices: List[Tuple[str, List[int]]]
-			) -> Tuple[QID, SQuestion, List[Tuple[SChoice, List[int]]]]:
+	) -> Tuple[QID, SQuestion, List[Tuple[SChoice, SVector]]]:
 		QuestionStore.assert_valid_inputs(question, answer_choices)
-
-		pass
+		return database.store_question(question, [
+			(choice, ",".join([str(i) for i in vector]))
+			for choice, vector in answer_choices
+		])
 
 	@staticmethod
 	def assert_valid_inputs(
 			question: str,
 			answer_choices: List[Tuple[str, List[int]]]
-			):
+	):
 		assert type(question) == str, "question must be a string"
 		assert type(answer_choices) == list, "answer_choice must be a list"
 		for tup in answer_choices:
@@ -32,6 +37,7 @@ class QuestionStore:
 			for i in vec:
 				assert type(i) == int or type(i) == float, \
 					"items in vector must be numbers"
+
 
 # =========
 # =========
@@ -51,7 +57,7 @@ class Question:
 		self.question = SQuestion(question)
 		self.choices = set(
 			SChoice(utils.clean_string(answer)) for answer in answers
-			)
+		)
 
 	def add_answer(self, answer: str) -> None:
 		Question.assert_valid_answer(answer)
@@ -90,7 +96,8 @@ class Question:
 		return '\n'.join([
 			'Question: ' + self.question,
 			'Answer choices: ' + ', '.join(self.choices)
-			])
+		])
+
 
 class QuestionSetCreator:
 	"""
@@ -121,7 +128,7 @@ class QuestionSetCreator:
 		return [
 			(question.question, list(question.choices))
 			for question in self.questions
-			]
+		]
 
 	def store(self) -> None:
 		database.store_question_set(self.tolist(), self.name)
@@ -133,7 +140,8 @@ class QuestionSetCreator:
 		"""
 		return '\n---\n'.join([
 			question.get_writable(ensure_count) for question in self.questions
-			])
+		])
+
 
 def start_interactive_question_set_creation() -> None:
 	"""
@@ -144,12 +152,12 @@ def start_interactive_question_set_creation() -> None:
 		"Please enter a name for this question set of leave it blank for "
 		"a randomly generated name.",
 		choices=lambda x: x is None or type(x) == str
-		)
+	)
 	qsc = QuestionSetCreator(qs_name)
 	utils.log_prompt(
 		"Creating a new question set: \nEnter as many questions as you'd "
 		"like. Then, when done, you can save your question set.\n\n"
-		)
+	)
 	# enter loop prompting to add questions until the
 	# person added all questions
 	while utils.r_input_yn('Would you like to to add a question?'):
@@ -162,8 +170,8 @@ def start_interactive_question_set_creation() -> None:
 				"sure to have at least 2 choices:\n" % utils.EXIT_PROMPT,
 				choices=utils.create_asserter_to_boolean(
 					Question.assert_valid_answer
-					)
 				)
+			)
 			if answer == utils.EXIT_PROMPT:
 				break
 			answers.append(answer)
@@ -171,7 +179,7 @@ def start_interactive_question_set_creation() -> None:
 			qsc.add_question(question, answers)
 			utils.log_prompt(
 				'the last question you entered is: '
-				)
+			)
 			utils.log_notice(qsc.last_question_added.get_writable())
 		except AssertionError:
 			err_msg = \
@@ -185,13 +193,14 @@ def start_interactive_question_set_creation() -> None:
 		return
 	if utils.r_input_yn(
 			'would you like to see the questions and choices so far?'
-			):
+	):
 		utils.log_notice(qsc.get_writable())
 	if utils.r_input_yn('do you want to store this set of questions?'):
 		qsc.store()
 		utils.log_prompt('you are done!')
 	else:
 		utils.log_prompt("your questions weren't saved as you wished.")
+
 
 if __name__ == '__main__':
 	start_interactive_question_set_creation()

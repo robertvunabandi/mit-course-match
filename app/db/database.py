@@ -4,6 +4,7 @@ from app.db.sql_constants import TBL, TBLCol
 from typing import List, Callable, Tuple, Set, Dict, Any
 from app.classifier.custom_types import (
 	SChoice,
+	SVector,
 	SQuestion,
 	SCourseNumber,
 	SCourse,
@@ -170,7 +171,10 @@ class _DB:
 
 	@staticmethod
 	@_commit
-	def store_question(question: str, choices: List[str, str]) -> None:
+	def store_question(
+			question: str,
+			choices: List[Tuple[str, str]]
+	) -> Tuple[QID, SQuestion, List[Tuple[SChoice, SVector]]]:
 		if _DB.question_exists_in_db(question):
 			raise ValueError('this question already exists in the database')
 		data = (TBL.Questions, TBLCol.question, question)
@@ -190,6 +194,9 @@ class _DB:
 			])
 		)
 		cursor.execute("INSERT INTO %s (%s, %s) VALUES %s;" % data)
+		answers = \
+			[(SChoice(choice), SVector(vector)) for choice, vector in choices]
+		return QID(question_id), SQuestion(question), answers
 
 	# Id and name getters
 

@@ -13,7 +13,7 @@ from app.classifier.custom_types import (
 	RID,
 	MSID,
 	QSID,
-	)
+)
 from app.db.mit_courses import mit_courses
 import mysql.connector.errors
 
@@ -34,6 +34,7 @@ def _commit(method: Callable) -> Callable:
 
 	return wrapper
 
+
 @_commit
 def initialize_database() -> None:
 	"""
@@ -46,7 +47,7 @@ def initialize_database() -> None:
 	# create courses table
 	courses_data = (
 		TBL.Courses, TBLCol.course_id, TBLCol.course_number, TBLCol.course_name
-		)
+	)
 	cursor.execute("""
 		CREATE TABLE IF NOT EXISTS %s (
 			%s SERIAL,
@@ -68,7 +69,7 @@ def initialize_database() -> None:
 		TBLCol.question_id,
 		TBLCol.choice,
 		TBLCol.vector,
-		)
+	)
 	cursor.execute("""
 		CREATE TABLE IF NOT EXISTS %s (
 			%s SERIAL,
@@ -84,7 +85,7 @@ def initialize_database() -> None:
 		TBLCol.course_id,
 		TBLCol.course_name,
 		TBLCol.time_created,
-		)
+	)
 	cursor.execute("""
 		CREATE TABLE IF NOT EXISTS %s (
 			%s SERIAL,
@@ -103,7 +104,7 @@ def initialize_database() -> None:
 		TBLCol.response_id,
 		TBLCol.question_id,
 		TBLCol.answer_id,
-		)
+	)
 	cursor.execute("""
 		CREATE TABLE IF NOT EXISTS %s (
 			%s BIGINT UNSIGNED NOT NULL,
@@ -116,20 +117,20 @@ def initialize_database() -> None:
 		[
 			"fk_answer_choices_to_question_id",
 			(TBL.AnswerChoices, TBLCol.question_id, TBL.Questions, TBLCol.question_id)
-			],
+		],
 		[
 			"fk_response_mappings_to_response_id",
 			(TBL.ResponseMappings, TBLCol.response_id, TBL.Responses, TBLCol.response_id)
-			],
+		],
 		[
 			"fk_response_mappings_to_question_id",
 			(TBL.ResponseMappings, TBLCol.question_id, TBL.Questions, TBLCol.question_id)
-			],
+		],
 		[
 			"fk_response_mappings_to_answer_id",
 			(TBL.ResponseMappings, TBLCol.answer_id, TBL.AnswerChoices, TBLCol.answer_id)
-			]
 		]
+	]
 	for fk, fk_data in fk_insertion_data:
 		query_data = (fk_data[0],) + (fk,) + fk_data[1:]
 		try:
@@ -152,12 +153,13 @@ def initialize_database() -> None:
 		",".join(
 			["(" + ",".join(
 				[utils.quote(s) for s in course_row]
-				) + ")" for course_row in mit_courses]
-			),
-		)
+			) + ")" for course_row in mit_courses]
+		),
+	)
 	cursor.execute("""
 		INSERT INTO %s (%s, %s) VALUES %s;
 	""" % course_population_data)
+
 
 class _DB:
 	"""
@@ -173,20 +175,22 @@ class _DB:
 			raise ValueError('this question already exists in the database')
 		data = (TBL.Questions, TBLCol.question, question)
 		cursor.execute("INSERT INTO %s (%s) VALUES ('%s')" % data)
-
 		question_id = _DB.question_id(question)
 		data = (
 			TBL.AnswerChoices,
 			TBLCol.question_id,
 			TBLCol.choice,
 			', '.join([
-				"(" + str(question_id) + ", '" + str(choice) + "')"
-				for choice in choices
-				])
-			)
+				"(" + ",".join([
+					str(question_id),
+					utils.quote(str(choice)),
+					utils.quote(str(vector))
+				]) + ")"
+				for choice, vector in choices
+			])
+		)
 		cursor.execute("INSERT INTO %s (%s, %s) VALUES %s;" % data)
 
-	#
 	# Id and name getters
 
 	@staticmethod
@@ -195,8 +199,8 @@ class _DB:
 			tbl=TBL.Questions,
 			unique_col_name=TBLCol.question_id,
 			target_col_name=TBLCol.question,
-			target_value="'" + question + "'",
-			)
+			target_value=utils.quote(question),
+		)
 
 	@staticmethod
 	def response_id(response_salt: str) -> int or None:
@@ -204,8 +208,8 @@ class _DB:
 			tbl=TBL.Responses,
 			unique_col_name=TBLCol.response_id,
 			target_col_name=TBLCol.response_salt,
-			target_value="'" + response_salt + "'",
-			)
+			target_value=utils.quote(response_salt),
+		)
 
 	@staticmethod
 	def get_unique_field(
@@ -250,7 +254,7 @@ class _DB:
 				TBLCol.response_salt,
 				str(qsid),
 				response_salt
-				)
+			)
 			query = "INSERT INTO %s (%s, %s) VALUES (%s, %s)"
 		else:
 			cid, cn, course = course_bundle
@@ -264,7 +268,7 @@ class _DB:
 				utils.quote(response_salt),
 				utils.quote(cn),
 				str(cid)
-				)
+			)
 			query = "INSERT INTO %s (%s, %s, %s, %s) VALUES (%s, %s, %s, %s)"
 		cursor.execute(query % data)
 		# then insert the questions's answers
@@ -272,7 +276,7 @@ class _DB:
 		values = ", ".join([
 			"(" + ", ".join([str(rid), str(qid), str(aid)]) + ")"
 			for qid, aid in responses
-			])
+		])
 		data = (
 			TBL.ResponseMappings,
 			TBLCol.response_id,
@@ -295,7 +299,7 @@ class _DB:
 			TBLCol.mapping_set_name,
 			str(qsid),
 			ms_name
-			)
+		)
 		cursor.execute("INSERT INTO %s (%s, %s) VALUES (%s, '%s')" % data)
 		# insert all the mappings into the db
 		msid = _DB.mapping_set_id(ms_name)
@@ -312,7 +316,7 @@ class _DB:
 					", '",
 					','.join(str(el) for el in vector),
 					"')",
-					]))
+				]))
 		data = (
 			TBL.AnswerMappings,
 			TBLCol.mapping_set_id,
@@ -320,7 +324,7 @@ class _DB:
 			TBLCol.answer_id,
 			TBLCol.vector,
 			', '.join(additional_values)
-			)
+		)
 		print(data)
 		cursor.execute("INSERT INTO %s (%s, %s, %s, %s) VALUES %s" % data)
 
@@ -349,8 +353,8 @@ class _DB:
 			', '.join([
 				"(%d, %d)" % (qsid, _DB.question_id(question))
 				for question, _ in question_set
-				])
-			)
+			])
+		)
 		cursor.execute("INSERT INTO %s (%s, %s) VALUES %s;" % data)
 		return errors
 
@@ -381,7 +385,7 @@ class _DB:
 		return utils.generate_unique_id(
 			_DB.get_all_response_salts(),
 			utils.generate_response_salt
-			)
+		)
 
 	@staticmethod
 	def create_or_make_ms_name_unique(ms_name: str = None) -> str:
@@ -422,7 +426,7 @@ class _DB:
 		if name is None or len(name) == 0:
 			return utils.generate_unique_id(
 				taken_name_set, name_generator_func
-				)
+			)
 		name_extension = ""
 		while name + name_extension in taken_name_set or len(name) < minimum_name_length:
 			name_extension = '-' + name_extension_generation_func()
@@ -444,20 +448,20 @@ class _DB:
 			TBL.AnswerChoices,
 			TBLCol.question_id,
 			question_id
-			)
+		)
 		cursor.execute("SELECT %s, %s FROM %s WHERE %s = '%s'" % data)
 		return [(aid, choice) for aid, choice in cursor.fetchall()]
 
 	@staticmethod
 	def load_question_set(
 			qsid: int
-			) -> List[Tuple[QID, SQuestion, List[Tuple[AID, SChoice]]]]:
+	) -> List[Tuple[QID, SQuestion, List[Tuple[AID, SChoice]]]]:
 		data = (
 			TBLCol.question_id,
 			TBL.QuestionMappings,
 			TBLCol.question_set_id,
 			qsid,
-			)
+		)
 		assert _DB.question_set_name(qsid) is not None, \
 			"there doesn't exist a question set with " \
 			"this qsid -> %s" % str(qsid)
@@ -470,7 +474,7 @@ class _DB:
 				TBL.AnswerChoices, TBL.Questions,
 				TBLCol.question_id, TBLCol.question_id,
 				TBLCol.question_id, qid
-				)
+			)
 			cursor.execute("""
 					SELECT a.%s, a.%s, b.%s 
 					FROM %s a LEFT JOIN %s b 
@@ -484,8 +488,8 @@ class _DB:
 					QID(qid),
 					question,
 					[(AID(aid), SChoice(choice)) for aid, choice, _ in rows],
-					)
 				)
+			)
 		return question_set_result
 
 	@staticmethod
@@ -495,7 +499,7 @@ class _DB:
 			TBL.AnswerMappings, TBL.AnswerChoices,
 			TBLCol.answer_id, TBLCol.answer_id,
 			TBLCol.mapping_set_id, str(msid)
-			)
+		)
 		cursor.execute("""
 				SELECT b.%s, a.%s, a.%s 
 				FROM %s a JOIN %s b 
@@ -513,7 +517,7 @@ class _DB:
 			TBLCol.response_id, TBLCol.course_id, TBL.Responses,
 			TBLCol.question_set_id, str(qsid), TBLCol.course_id,
 			TBLCol.response_id, TBLCol.response_id,
-			)
+		)
 		cursor.execute("""
 				SELECT a.%s, b.%s, a.%s, a.%s FROM 
 				%s a JOIN (
@@ -536,7 +540,7 @@ class _DB:
 			TBL.ResponseMappings,
 			TBLCol.response_id,
 			str(rid)
-			)
+		)
 		cursor.execute("SELECT %s, %s FROM %s WHERE %s = %s" % data)
 		rows = cursor.fetchall()
 		if len(rows) == 0:
@@ -553,9 +557,10 @@ class _DB:
 			TBLCol.course_name,
 			TBLCol.course_id,
 			TBL.Courses
-			)
+		)
 		cursor.execute("SELECT %s, %s, %s FROM %s" % data)
 		return cursor.fetchall()
+
 
 # Exposing functions that will be used publicly
 store_question = _DB.store_question

@@ -5,6 +5,7 @@ and anything else needed
 from typing import Callable, List, Set, Iterable, Union, Any
 import random
 
+
 ALPHANUMERIC_ALPHABET = list('0123456789abcdefghijklmnopqrstuvwxyz')
 DIGITS_ALPHABET = list('0123456789')
 LETTERS_ALPHABET = list('abcdefghijklmnopqrstuvwxyz')
@@ -153,7 +154,7 @@ def r_input_yn(prompt: str) -> bool:
 		choices=lambda x: x in {"y", "n"},
 		invalid_input_message="Please, answer with only 'y' for yes and 'n' for no.",
 		color=True
-	) == 'y'
+		) == 'y'
 
 
 def log_prompt(text: Union[str, List[str]]) -> None:
@@ -241,8 +242,11 @@ def clean_string(string: str) -> str:
 	return string
 
 
-def quote(string: str) -> str:
-	return "\"" + string + "\""
+def quote(string: str, use_single=False) -> str:
+	q = "\""
+	if use_single:
+		q = "'"
+	return q + string + q
 
 
 def assert_valid_db_id(id: int, idtype: str = None) -> None:

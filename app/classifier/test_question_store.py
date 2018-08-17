@@ -65,18 +65,6 @@ class TestQuestionStore(unittest.TestCase):
 			print(e)
 			self.fail("should not fail")
 
-	def test_store_question_01_should_fail(self):
-		self.fail("test not implemented")
-
-	def test_store_question_02_should_fail(self):
-		self.fail("test not implemented")
-
-	def test_store_question_01_should_pass(self):
-		self.fail("test not implemented")
-
-	def test_store_question_02_should_pass(self):
-		self.fail("test not implemented")
-
 
 if __name__ == '__main__':
 	unittest.main()

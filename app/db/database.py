@@ -164,9 +164,9 @@ def initialize_database() -> None:
 
 class _DB:
 	"""
-	DB provides ways to interact with the database without having to write
-	db queries. This abstracts away how the database works and what queries
-	are called from the caller.
+	DB provides ways to interact with the database without having to
+	write db queries. This abstracts away how the database works and
+	what queries are called from the caller.
 	"""
 
 	@staticmethod

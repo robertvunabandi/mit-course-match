@@ -165,7 +165,79 @@ class TestDatabase(unittest.TestCase):
 			"answer choice %s was not found in db" % str((1, "Yo", "1,4"))
 		)
 
+	def test_initialize_twice_doesnt_add_courses_twice(self):
+		"""
+		we shouldn't add courses twice. This can create unexpected
+		bugs in the future.
+		"""
+		TestDatabase.drop_all_tables()
+		try:
+			database.initialize_database()
+		except Exception as exception:
+			print(exception)
+			self.fail("initialization raised an error")
+		try:
+			database.cursor.execute("SELECT COUNT(*) FROM %s" % TBL.Courses)
+			course_count_before = database.cursor.fetchall()[0][0]
+		except Exception as exception:
+			print(exception)
+			self.fail("wasn't able to fetch the course count")
+		try:
+			database.initialize_database()
+		except Exception as exception:
+			print(exception)
+			self.fail("initialization raised an error the second time")
+		try:
+			database.cursor.execute("SELECT COUNT(*) FROM %s" % TBL.Courses)
+			course_count_after = database.cursor.fetchall()[0][0]
+		except Exception as exception:
+			print(exception)
+			self.fail("wasn't able to fetch the course count after")
+		self.assertEqual(
+			course_count_before,
+			course_count_after,
+			"courses should not be added twice!"
+		)
 
+	def test_initialize_later_adds_additional_courses(self):
+		"""
+		If we update mit_courses.py, initialize should add the extra
+		courses into the table as well.
+		"""
+		import app.db.mit_courses as mit_courses_
+		TestDatabase.drop_all_tables()
+		try:
+			database.initialize_database()
+		except Exception as exception:
+			print(exception)
+			self.fail("initialization raised an error")
+		try:
+			database.cursor.execute("SELECT COUNT(*) FROM %s" % TBL.Courses)
+			course_count_before = database.cursor.fetchall()[0][0]
+		except Exception as exception:
+			print(exception)
+			self.fail("wasn't able to fetch the course count")
+		# add 2 new courses, the initialize again
+		mit_courses_.mit_courses.extend([("13", "Crash"), ("19", "Best Course")])
+
+		try:
+			database.initialize_database()
+		except Exception as exception:
+			print(exception)
+			self.fail("initialization raised an error the second time")
+		try:
+			database.cursor.execute("SELECT COUNT(*) FROM %s" % TBL.Courses)
+			course_count_after = database.cursor.fetchall()[0][0]
+		except Exception as exception:
+			print(exception)
+			self.fail("wasn't able to fetch the course count after")
+		self.assertTrue(
+			course_count_after == course_count_before + 2,
+			"the additional 2 courses didn't update, \nCourses before: %d, "
+			"\nCourses expected after: %d, \nCourses got after: %d" %
+			(course_count_before, course_count_before + 2, course_count_after)
+		)
+		mit_courses_.mit_courses = mit_courses_.mit_courses[:-2]
 
 
 if __name__ == '__main__':

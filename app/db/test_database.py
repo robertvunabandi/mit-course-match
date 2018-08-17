@@ -4,7 +4,6 @@ import mysql.connector
 from typing import Callable
 from app.db.sql_constants import TBL, TBLCol
 import app.db.database as database
-import app.classifier.utils as utils
 from app.db.mit_courses import mit_courses
 
 

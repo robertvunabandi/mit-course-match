@@ -1,7 +1,7 @@
-from app.classifier import utils
+from app.utils import number_utils
 from app.db.sql import cursor, cnx
 from app.db.sql_constants import TBL, TBLCol
-from typing import List, Callable, Tuple, Set, Dict, Any
+from typing import List, Callable, Tuple, Set, Dict
 from app.classifier.custom_types import (
 	SChoice,
 	SVector,
@@ -17,6 +17,7 @@ from app.classifier.custom_types import (
 )
 from app.db.mit_courses import mit_courses
 import mysql.connector.errors
+from app.utils.string_util import quote
 
 
 def _commit(method: Callable) -> Callable:
@@ -155,7 +156,7 @@ def initialize_database() -> None:
 		TBLCol.course_name,
 		",".join(
 			["(" + ",".join(
-				[utils.quote(s) for s in course_row]
+				[quote(s) for s in course_row]
 			) + ")" for course_row in mit_courses]
 		),
 	)
@@ -189,8 +190,8 @@ class _DB:
 			', '.join([
 				"(" + ",".join([
 					str(question_id),
-					utils.quote(str(choice)),
-					utils.quote(str(vector))
+					quote(str(choice)),
+					quote(str(vector))
 				]) + ")"
 				for choice, vector in choices
 			])
@@ -212,7 +213,7 @@ class _DB:
 			tbl=TBL.Questions,
 			unique_col_name=TBLCol.question_id,
 			target_col_name=TBLCol.question,
-			target_value=utils.quote(question),
+			target_value=quote(question),
 		)
 
 	@staticmethod
@@ -221,7 +222,7 @@ class _DB:
 			tbl=TBL.Responses,
 			unique_col_name=TBLCol.response_id,
 			target_col_name=TBLCol.response_salt,
-			target_value=utils.quote(response_salt),
+			target_value=quote(response_salt),
 		)
 
 	@staticmethod
@@ -278,8 +279,8 @@ class _DB:
 				TBLCol.course_number,
 				TBLCol.course_id,
 				str(qsid),
-				utils.quote(response_salt),
-				utils.quote(cn),
+				quote(response_salt),
+				quote(cn),
 				str(cid)
 			)
 			query = "INSERT INTO %s (%s, %s, %s, %s) VALUES (%s, %s, %s, %s)"
@@ -391,9 +392,9 @@ class _DB:
 
 	@staticmethod
 	def create_response_salt_unique() -> str:
-		return utils.generate_unique_id(
+		return number_utils.generate_unique_id(
 			_DB.get_all_response_salts(),
-			utils.generate_response_salt
+			number_utils.generate_response_salt
 		)
 
 	@staticmethod
@@ -401,8 +402,8 @@ class _DB:
 		return _DB.create_or_make_name_unique(
 			ms_name,
 			_DB.get_all_mapping_set_names(),
-			utils.generate_mapping_set_name,
-			utils.generate_mapping_set_extension,
+			number_utils.generate_mapping_set_name,
+			number_utils.generate_mapping_set_extension,
 			minimum_name_length=4)
 
 	@staticmethod
@@ -410,8 +411,8 @@ class _DB:
 		return _DB.create_or_make_name_unique(
 			qs_name,
 			_DB.get_all_question_set_names(),
-			utils.generate_question_set_name,
-			utils.generate_question_set_extension,
+			number_utils.generate_question_set_name,
+			number_utils.generate_question_set_extension,
 			minimum_name_length=4)
 
 	@staticmethod
@@ -433,7 +434,7 @@ class _DB:
 		:param minimum_name_length: the minimum length the name has to be
 		"""
 		if name is None or len(name) == 0:
-			return utils.generate_unique_id(
+			return number_utils.generate_unique_id(
 				taken_name_set, name_generator_func
 			)
 		name_extension = ""

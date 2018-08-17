@@ -1,4 +1,4 @@
-from app.classifier import utils
+from app.utils import number_utils
 import numpy as np
 from typing import Iterable, Tuple, List, Dict, Set
 from app.db import database
@@ -207,8 +207,8 @@ class QuestionAnswerManager:
 
 class DataManager:
 	def __init__(self, qsid: QSID, msid: MSID) -> None:
-		utils.assert_valid_db_id(qsid, QSID.__name__)
-		utils.assert_valid_db_id(msid, MSID.__name__)
+		number_utils.assert_valid_db_id(qsid, QSID.__name__)
+		number_utils.assert_valid_db_id(msid, MSID.__name__)
 		self.qsid, self.msid = qsid, msid
 		self.course_obj: CourseObj = None
 		self.qa_manager: QuestionAnswerManager = None

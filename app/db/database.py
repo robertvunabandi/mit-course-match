@@ -85,6 +85,7 @@ def initialize_database() -> None:
 		TBLCol.response_id,
 		TBLCol.course_id,
 		TBLCol.course_name,
+		TBLCol.response_salt,
 		TBLCol.time_created,
 	)
 	cursor.execute("""
@@ -96,6 +97,7 @@ def initialize_database() -> None:
 			-- for the course is needed whereas course ids are 
 			-- arbitrary 
 			%s TINYTEXT,
+			%s VARCHAR(10),
 			%s DATETIME(6)
 		);
 	""" % responses_data)
@@ -172,8 +174,8 @@ class _DB:
 	@staticmethod
 	@_commit
 	def store_question(
-			question: str,
-			choices: List[Tuple[str, str]]
+		question: str,
+		choices: List[Tuple[str, str]]
 	) -> Tuple[QID, SQuestion, List[Tuple[SChoice, SVector]]]:
 		if _DB.question_exists_in_db(question):
 			raise ValueError('this question already exists in the database')
@@ -198,6 +200,10 @@ class _DB:
 			[(SChoice(choice), SVector(vector)) for choice, vector in choices]
 		return QID(question_id), SQuestion(question), answers
 
+	@staticmethod
+	def question_exists_in_db(question: str) -> bool:
+		return _DB.question_id(question) is not None
+
 	# Id and name getters
 
 	@staticmethod
@@ -220,10 +226,10 @@ class _DB:
 
 	@staticmethod
 	def get_unique_field(
-			tbl: str,
-			unique_col_name: str,
-			target_col_name: str,
-			target_value: str) -> str or int or None:
+		tbl: str,
+		unique_col_name: str,
+		target_col_name: str,
+		target_value: str) -> str or int or None:
 		"""
 		this method expects that the column target_col_name column has unique
 		values such that the id_col_name column only has one id that can match
@@ -249,9 +255,9 @@ class _DB:
 	@staticmethod
 	@_commit
 	def store_response_set(
-			responses: List[Tuple[QID, AID]],
-			qsid: QSID,
-			course_bundle: Tuple[CID, SCourseNumber, SCourse] or None = None) -> None:
+		responses: List[Tuple[QID, AID]],
+		qsid: QSID,
+		course_bundle: Tuple[CID, SCourseNumber, SCourse] or None = None) -> None:
 		# first insert the whole response set
 		response_salt = _DB.create_response_salt_unique()
 		if course_bundle is None:
@@ -295,9 +301,9 @@ class _DB:
 	@staticmethod
 	@_commit
 	def store_mapping_set(
-			mapping_set: List[Tuple[QID, SQuestion, List[Tuple[AID, List[int]]]]],
-			qsid: int,
-			ms_name: str = None) -> None:
+		mapping_set: List[Tuple[QID, SQuestion, List[Tuple[AID, List[int]]]]],
+		qsid: int,
+		ms_name: str = None) -> None:
 		ms_name = _DB.create_or_make_ms_name_unique(ms_name)
 		# create the mapping set
 		data = (
@@ -338,8 +344,8 @@ class _DB:
 	@staticmethod
 	@_commit
 	def store_question_set(
-			question_set: List[Tuple[str, List[str]]],
-			qs_name: str = None) -> List[Tuple[Tuple[str, str], Exception]]:
+		question_set: List[Tuple[str, List[str]]],
+		qs_name: str = None) -> List[Tuple[Tuple[str, str], Exception]]:
 		qs_name = _DB.create_or_make_qs_name_unique(qs_name)
 		# create the question set
 		data = (TBL.QuestionSets, TBLCol.question_set_name, qs_name)
@@ -364,10 +370,6 @@ class _DB:
 		)
 		cursor.execute("INSERT INTO %s (%s, %s) VALUES %s;" % data)
 		return errors
-
-	@staticmethod
-	def question_exists_in_db(question: str) -> bool:
-		return _DB.question_id(question) is not None
 
 	@staticmethod
 	def get_all_mapping_set_names() -> Set[str]:
@@ -414,11 +416,11 @@ class _DB:
 
 	@staticmethod
 	def create_or_make_name_unique(
-			name: str or None,
-			taken_name_set: Set[str],
-			name_generator_func: Callable,
-			name_extension_generation_func: Callable,
-			minimum_name_length: int = 4) -> str:
+		name: str or None,
+		taken_name_set: Set[str],
+		name_generator_func: Callable,
+		name_extension_generation_func: Callable,
+		minimum_name_length: int = 4) -> str:
 		"""
 		fix the name such that it's unique when stored in the db
 		:param name: a string that represents the name for a given table column
@@ -448,7 +450,7 @@ class _DB:
 
 	@staticmethod
 	def answer_choices_for_question_id(
-			question_id: int) -> List[Tuple[int, str]]:
+		question_id: int) -> List[Tuple[int, str]]:
 		data = (
 			TBLCol.answer_id,
 			TBLCol.choice,
@@ -461,7 +463,7 @@ class _DB:
 
 	@staticmethod
 	def load_question_set(
-			qsid: int
+		qsid: int
 	) -> List[Tuple[QID, SQuestion, List[Tuple[AID, SChoice]]]]:
 		data = (
 			TBLCol.question_id,

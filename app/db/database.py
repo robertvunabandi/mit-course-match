@@ -58,12 +58,10 @@ def initialize_database() -> None:
 		);
 	""" % courses_data)
 	# create questions table
-	cursor.execute("""
-		CREATE TABLE IF NOT EXISTS %s (
-			%s SERIAL,
-			%s TEXT NOT NULL
-		);
-	""" % (TBL.Questions, TBLCol.question_id, TBLCol.question))
+	cursor.execute(
+		"CREATE TABLE IF NOT EXISTS %s ( %s SERIAL, %s TEXT NOT NULL)" %
+		(TBL.Questions, TBLCol.question_id, TBLCol.question)
+	)
 	# create answer choices table
 	answer_choices_query_data = (
 		TBL.AnswerChoices,
@@ -150,19 +148,30 @@ def initialize_database() -> None:
 			pass
 
 	# populate courses with the data we have in mit_courses.py
-	course_population_data = (
-		TBL.Courses,
-		TBLCol.course_number,
-		TBLCol.course_name,
-		",".join(
-			["(" + ",".join(
-				[quote(s) for s in course_row]
-			) + ")" for course_row in mit_courses]
-		),
+	cursor.execute(
+		"SELECT %s, %s FROM %s" %
+		(TBLCol.course_number, TBLCol.course_name, TBL.Courses)
 	)
-	cursor.execute("""
-		INSERT INTO %s (%s, %s) VALUES %s;
-	""" % course_population_data)
+	courses_already_in_db = cursor.fetchall()
+	course_to_add = [
+		course for course in mit_courses
+		if course not in courses_already_in_db
+	]
+	if len(course_to_add) > 0:
+		course_population_data = (
+			TBL.Courses,
+			TBLCol.course_number,
+			TBLCol.course_name,
+			",".join(
+				["(" + ",".join(
+					[quote(s) for s in course_row]
+				) + ")" for course_row in course_to_add]
+			),
+		)
+		cursor.execute(
+			"INSERT INTO %s (%s, %s) VALUES %s;" %
+			course_population_data
+		)
 
 
 class _DB:

@@ -4,15 +4,8 @@ and anything else needed
 """
 from typing import Callable, List, Set, Iterable, Union, Any
 
-EXIT_PROMPT = '<Q>'
 
 
-def deprecated(func: Callable) -> Callable:
-	def method(*args, **kwargs):
-		print('Warning: this method is deprecated.')
-		return func(*args, **kwargs)
-
-	return method
 
 
 def isinteger(s: Any) -> bool:

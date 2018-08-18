@@ -82,6 +82,10 @@ class _DBInitializer:
 				-- ids are arbitrary. so we retrieve courses with 
 				-- course names
 				%s TINYTEXT,
+				-- response salts are just random strings that are 
+				-- generated at creation time in order to fetch the
+				-- response id (since ids are incremented 
+				-- automatically). 
 				%s VARCHAR(10),
 				%s DATETIME(6)
 			);

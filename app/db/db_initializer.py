@@ -69,7 +69,6 @@ class _DBInitializer:
 		responses_data = (
 			TBL.Responses,
 			TBLCol.response_id,
-			TBLCol.course_id,
 			TBLCol.course_name,
 			TBLCol.response_salt,
 			TBLCol.time_created,
@@ -77,11 +76,11 @@ class _DBInitializer:
 		cursor.execute("""
 			CREATE TABLE IF NOT EXISTS %s (
 				%s SERIAL,
-				%s BIGINT UNSIGNED NOT NULL,
-				-- the course name is extremely unlikely to change over
-				-- a long time. so having that as a safe reference key 
-				-- for the course is needed whereas course ids are 
-				-- arbitrary 
+				-- the course name is extremely unlikely to change 
+				-- over a long time. so having that as a safe key 
+				-- reference for the course is needed whereas course  
+				-- ids are arbitrary. so we retrieve courses with 
+				-- course names
 				%s TINYTEXT,
 				%s VARCHAR(10),
 				%s DATETIME(6)

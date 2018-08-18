@@ -125,7 +125,6 @@ class Classifier:
 		best course prediction to worst
 		:param vector: A vector that has the shape (1, self.data_manager.input_dimension)
 		:param verbose: the verbosity level when making the prediction
-		:return:
 		"""
 		return self.get_course_rankings(
 			self._classifier.predict(vector, verbose=verbose)

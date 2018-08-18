@@ -160,7 +160,7 @@ class _DB:
 	@staticmethod
 	@_commit
 	def store_response(
-		response: Dict[QID, RID],
+		response: Dict[QID, AID],
 		cn: SCourseNumber = None,
 	) -> RID:
 		salt = _DB.create_unique_response_salt()

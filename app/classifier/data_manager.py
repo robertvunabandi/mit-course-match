@@ -18,7 +18,7 @@ import numpy as np
 class DataManager:
 	def __init__(self):
 		self._input_dim, self._output_dim = None, None
-		self.response_choices: Dict[QID, Union[AID, None]] = {}
+		self.response_choices: Dict[QID, AID] = {}
 		self.cm = CourseManager()
 		self.qam = QuestionAnswerManager()
 
@@ -38,10 +38,11 @@ class DataManager:
 	def store_response(
 		self,
 		course: CID or SCourse or SCourseNumber = None,
-	) -> None:
-		self.assert_all_questions_answered()
-		# todo - implement this method
-		raise NotImplementedError
+	) -> RID:
+		return database.store_response(
+			self.response_choices,
+			self.cm.get_cn(course),
+		)
 
 	def assert_all_questions_answered(self):
 		not_answered = [
@@ -54,8 +55,7 @@ class DataManager:
 		)
 
 	def refresh_response(self) -> None:
-		for qid in self.question_ids():
-			self.response_choices[qid] = None
+		self.response_choices = {}
 
 	def get_response_vector(self) -> np.ndarray:
 		return self.qam.convert_response_to_vector(self.response_choices)

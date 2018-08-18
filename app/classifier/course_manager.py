@@ -34,7 +34,7 @@ class CourseManager:
 	def get_course_vector(
 		self,
 		course_identifier: CID or SCourse or SCourseNumber) -> np.ndarray:
-		cid = self.cid(course_identifier)
+		cid = self.get_cid(course_identifier)
 		if cid in self.cid_to_vector:
 			return self.cid_to_vector[cid]
 		course_index = self.cid_to_index[cid]
@@ -46,7 +46,7 @@ class CourseManager:
 		self,
 		course_identifier: CID or SCourse or SCourseNumber
 	) -> Tuple[CID, SCourseNumber, SCourse]:
-		cid = self.cid(course_identifier)
+		cid = self.get_cid(course_identifier)
 		cn, course = self.cid_to_course[cid]
 		return cid, cn, course
 
@@ -54,10 +54,13 @@ class CourseManager:
 		self,
 		course_identifier: CID or SCourse or SCourseNumber
 	) -> int:
-		return self.cid_to_index[self.cid(course_identifier)]
+		return self.cid_to_index[self.get_cid(course_identifier)]
 
-	def cid(self, course_identifier: CID or SCourse or SCourseNumber) -> CID:
+	def get_cid(self, course_identifier: CID or SCourse or SCourseNumber) -> CID:
 		return self.cid_resolver[course_identifier]
+
+	def get_cn(self, course_identifier: CID or SCourse or SCourseNumber) -> SCourseNumber:
+		return self.cid_to_course[self.get_cid(course_identifier)][0]
 
 	def course_ids(self) -> CID:
 		for cid in self.cid_to_course:

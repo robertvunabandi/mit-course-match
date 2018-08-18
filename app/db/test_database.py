@@ -88,7 +88,7 @@ class TestDatabase(unittest.TestCase):
 
 	# tests
 
-	def test_initialize(self):
+	def test_initialize_db(self):
 		try:
 			database.initialize_database()
 		except Exception as exception:
@@ -100,7 +100,7 @@ class TestDatabase(unittest.TestCase):
 				table in tables,
 				"table %s is missing from tables" % table
 			)
-		# check the courses database
+		# check that courses are saved in the database
 		database.cursor.execute("SELECT COUNT(*) FROM %s" % TBL.Courses)
 		try:
 			count = database.cursor.fetchall()[0][0]
@@ -111,7 +111,7 @@ class TestDatabase(unittest.TestCase):
 			"mit courses length didn't match"
 		)
 
-	def test_initialize_twice(self):
+	def test_initialize_db_twice(self):
 		"""
 		initialization should not throw an error if the table already exists
 		because we will be making the check every time the db is ran up
@@ -129,7 +129,7 @@ class TestDatabase(unittest.TestCase):
 			print(exception)
 			self.fail("initialization raised an error the second time")
 
-	def test_initialize_does_not_remove_existing_data(self):
+	def test_initialize_db_does_not_remove_existing_data(self):
 		# drop all tables
 		TestDatabase.drop_all_tables()
 		# initialize
@@ -165,7 +165,7 @@ class TestDatabase(unittest.TestCase):
 			"answer choice %s was not found in db" % str((1, "Yo", "1,4"))
 		)
 
-	def test_initialize_twice_doesnt_add_courses_twice(self):
+	def test_initialize_db_twice_doesnt_add_courses_twice(self):
 		"""
 		we shouldn't add courses twice. This can create unexpected
 		bugs in the future.
@@ -199,7 +199,7 @@ class TestDatabase(unittest.TestCase):
 			"courses should not be added twice!"
 		)
 
-	def test_initialize_later_adds_additional_courses(self):
+	def test_initialize_db_later_adds_additional_courses_if_needed(self):
 		"""
 		If we update mit_courses.py, initialize should add the extra
 		courses into the table as well.

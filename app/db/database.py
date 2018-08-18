@@ -15,9 +15,9 @@ from app.classifier.custom_types import (
 	MSID,
 	QSID,
 )
-from app.db.mit_courses import mit_courses
-import mysql.connector.errors
+
 from app.utils.string_util import quote
+import app.db.db_initializer as db_initializer
 
 
 def _commit(method: Callable) -> Callable:
@@ -39,139 +39,8 @@ def _commit(method: Callable) -> Callable:
 
 @_commit
 def initialize_database() -> None:
-	"""
-	when the database is just loaded, we need to make sure that all
-	the tables are created in the db. with this method, we will not
-	need to manually create tables every time we change db: it will
-	just create them at initialization.
-	:return: void
-	"""
-	# create courses table
-	courses_data = (
-		TBL.Courses, TBLCol.course_id, TBLCol.course_number, TBLCol.course_name
-	)
-	cursor.execute("""
-		CREATE TABLE IF NOT EXISTS %s (
-			%s SERIAL,
-			%s TINYTEXT NOT NULL,
-			%s TINYTEXT NOT NULL
-		);
-	""" % courses_data)
-	# create questions table
-	cursor.execute(
-		"CREATE TABLE IF NOT EXISTS %s ( %s SERIAL, %s TEXT NOT NULL)" %
-		(TBL.Questions, TBLCol.question_id, TBLCol.question)
-	)
-	# create answer choices table
-	answer_choices_query_data = (
-		TBL.AnswerChoices,
-		TBLCol.answer_id,
-		TBLCol.question_id,
-		TBLCol.choice,
-		TBLCol.vector,
-	)
-	cursor.execute("""
-		CREATE TABLE IF NOT EXISTS %s (
-			%s SERIAL,
-			%s BIGINT UNSIGNED NOT NULL,
-			%s TEXT NOT NULL, 
-			%s TEXT NOT NULL
-		);
-	""" % answer_choices_query_data)
-	# create response table
-	responses_data = (
-		TBL.Responses,
-		TBLCol.response_id,
-		TBLCol.course_id,
-		TBLCol.course_name,
-		TBLCol.response_salt,
-		TBLCol.time_created,
-	)
-	cursor.execute("""
-		CREATE TABLE IF NOT EXISTS %s (
-			%s SERIAL,
-			%s BIGINT UNSIGNED NOT NULL,
-			-- the course name is extremely unlikely to change over
-			-- a long time. so having that as a safe reference key 
-			-- for the course is needed whereas course ids are 
-			-- arbitrary 
-			%s TINYTEXT,
-			%s VARCHAR(10),
-			%s DATETIME(6)
-		);
-	""" % responses_data)
-	# create response mappings table
-	response_mappings_query_data = (
-		TBL.ResponseMappings,
-		TBLCol.response_id,
-		TBLCol.question_id,
-		TBLCol.answer_id,
-	)
-	cursor.execute("""
-		CREATE TABLE IF NOT EXISTS %s (
-			%s BIGINT UNSIGNED NOT NULL,
-			%s BIGINT UNSIGNED NOT NULL,
-			%s BIGINT UNSIGNED NOT NULL
-		);
-	""" % response_mappings_query_data)
-	# add ON DELETE table constraints on answer choices and response mappings
-	fk_insertion_data = [
-		[
-			"fk_answer_choices_to_question_id",
-			(TBL.AnswerChoices, TBLCol.question_id, TBL.Questions, TBLCol.question_id)
-		],
-		[
-			"fk_response_mappings_to_response_id",
-			(TBL.ResponseMappings, TBLCol.response_id, TBL.Responses, TBLCol.response_id)
-		],
-		[
-			"fk_response_mappings_to_question_id",
-			(TBL.ResponseMappings, TBLCol.question_id, TBL.Questions, TBLCol.question_id)
-		],
-		[
-			"fk_response_mappings_to_answer_id",
-			(TBL.ResponseMappings, TBLCol.answer_id, TBL.AnswerChoices, TBLCol.answer_id)
-		]
-	]
-	for fk, fk_data in fk_insertion_data:
-		query_data = (fk_data[0],) + (fk,) + fk_data[1:]
-		try:
-			cursor.execute("""
-				ALTER TABLE %s
-				ADD CONSTRAINT %s FOREIGN KEY (%s)
-				REFERENCES %s (%s)
-				ON DELETE CASCADE;
-			""" % query_data)
-		except mysql.connector.errors.IntegrityError:
-			# integrity error means we ran into the duplicate key,
-			# so table already had it
-			pass
-
-	# populate courses with the data we have in mit_courses.py
-	cursor.execute(
-		"SELECT %s, %s FROM %s" %
-		(TBLCol.course_number, TBLCol.course_name, TBL.Courses)
-	)
-	courses_already_in_db = cursor.fetchall()
-	course_to_add = [
-		course for course in mit_courses
-		if course not in courses_already_in_db
-	]
-	if len(course_to_add) > 0:
-		course_population_data = (
-			TBL.Courses,
-			TBLCol.course_number,
-			TBLCol.course_name,
-			",".join(
-				["(" + ",".join(
-					[quote(s) for s in course_row]
-				) + ")" for course_row in course_to_add]
-			),
-		)
-		cursor.execute(
-			"INSERT INTO %s (%s, %s) VALUES %s;" %
-			course_population_data
-		)
+	""" see db_initializer.py """
+	db_initializer.initialize_database(cursor)
 
 
 class _DB:

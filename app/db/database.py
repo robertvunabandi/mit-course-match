@@ -88,12 +88,31 @@ class _DB:
 		return _DB.question_id(question) is not None
 
 	@staticmethod
-	def load_questions() -> List[Tuple[QID, SQuestion]]:
-		cursor.execute(
-			"SELECT %s, %s FROM %s" %
-			(TBLCol.question_id, TBLCol.question, TBL.Questions)
+	def load_questions(
+	) -> List[Tuple[QID, SQuestion, List[Tuple[AID, SChoice]]]]:
+		data = (
+			TBLCol.question_id,
+			TBLCol.question,
+			TBLCol.answer_id,
+			TBLCol.choice,
+			TBL.Questions,
+			TBL.AnswerChoices,
+			TBLCol.question_id,
+			TBLCol.question_id,
 		)
-		return cursor.fetchall()
+		cursor.execute(
+			"SELECT a.%s, a.%s, b.%s, b.%s FROM %s a JOIN %s b ON a.%s = b.%s" %
+			data
+		)
+		result: Dict[Tuple[QID, SQuestion], List[Tuple[AID, SChoice]]] = {}
+		for qid, question, aid, answer_choice in cursor.fetchall():
+			question_list = result.get((qid, question), [])
+			question_list.append((aid, answer_choice))
+			result[(qid, question)] = question_list
+		return [
+			(qid, question, result[(qid, question)])
+			for (qid, question) in result
+		]
 
 	# courses
 
@@ -524,6 +543,7 @@ class _DB:
 load_courses = _DB.load_courses
 load_response = _DB.load_response
 load_labelled_responses = _DB.load_labelled_responses
+load_questions = _DB.load_questions
 store_question = _DB.store_question
 store_response = _DB.store_response
 # TODO - REMOVE BELOW

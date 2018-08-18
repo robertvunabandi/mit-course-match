@@ -1,5 +1,6 @@
 from flask import render_template, request, json
 from app import app
+import app.db.database as database
 
 
 @app.route("/")
@@ -12,27 +13,6 @@ def quiz():
 	return render_template("quiz.html")
 
 
-def get_questions():
-	return [
-		{
-			"question": "hello there",
-			"qid": 35,
-			"response_choices": [
-				{"choice": "Lemon", "aid": 46},
-				{"choice": "Almond", "aid": 55}
-			]
-		},
-		{
-			"question": "okay tell me",
-			"qid": 24,
-			"response_choices": [
-				{"choice": "No", "aid": 41},
-				{"choice": "Yes", "aid": 31}
-			]
-		}
-	]
-
-
 @app.route("/questions", methods=["GET"])
 def questions():
 	"""
@@ -41,8 +21,17 @@ def questions():
 		List[Dict["question": String, "qid": Int, "answers": AnswerList]]
 		AnswerList: List[Dict["choice": String, "aid": Int]]
 	"""
-	# TODO - replace this with the correct method that makes a call to the db
-	return json.dumps(get_questions())
+	json_data = []
+	for qid, question, answers in database.load_questions():
+		json_data.append({
+			"qid": qid,
+			"question": question,
+			"response_choices": [{
+				"choice": choice,
+				"aid": aid,
+			} for choice, aid in answers]
+		})
+	return json.dumps(json_data)
 
 
 @app.errorhandler(404)

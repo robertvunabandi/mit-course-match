@@ -95,7 +95,7 @@ class Classifier:
 	) -> None:
 		"""
 		Store the training data labeled with this course number
-		Note:
+		NOTE:
 			this will throw an error if some key in the dictionary
 			are missing. That is intentional.
 		"""

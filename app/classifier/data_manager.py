@@ -40,6 +40,7 @@ class DataManager:
 		course: CID or SCourse or SCourseNumber = None,
 	) -> None:
 		self.assert_all_questions_answered()
+		# todo - implement this method
 		raise NotImplementedError
 
 	def assert_all_questions_answered(self):
@@ -80,9 +81,3 @@ class DataManager:
 
 	def course_ids(self) -> Iterable[CID]:
 		yield from self.cm.course_ids()
-
-
-if __name__ == '__main__':
-	a = DataManager()
-	for cid in a.course_ids():
-		print(a.cm.get_course_bundle(cid))

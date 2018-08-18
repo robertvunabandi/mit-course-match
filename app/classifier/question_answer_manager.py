@@ -4,7 +4,7 @@ import numpy as np
 import app.db.database as database
 from app.utils.resolver_util import ValueResolver
 
-
+# todo - implement all the methods in this class as they are not implemented
 class QuestionAnswerManager:
 	def __init__(self) -> None:
 		self.qid_resolver: ValueResolver[QID or SQuestion, QID] = None
@@ -20,8 +20,8 @@ class QuestionAnswerManager:
 		qid = self.qid_resolver[question]
 		return self.aid_resolver[qid][answer]
 
-	def convert_response_to_vector(self, response: Dict[QID, AID or None]):
-		pass
+	def convert_response_to_vector(self, response: Dict[QID, AID or None]) -> np.ndarray:
+		raise NotImplementedError
 
 	def question_ids(self) -> Iterable[QID]:
 		for qid in self.qid_set:

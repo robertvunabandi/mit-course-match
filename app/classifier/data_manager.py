@@ -18,7 +18,7 @@ import numpy as np
 class DataManager:
 	def __init__(self):
 		self._input_dim, self._output_dim = None, None
-		self.response_choices: Dict[QID, AID] = {}
+		self.response_choices: Dict[QID, Union[AID, None]] = {}
 		self.cm = CourseManager()
 		self.qam = QuestionAnswerManager()
 
@@ -52,8 +52,9 @@ class DataManager:
 			"yet" % ",".join([str(qid) for qid in not_answered])
 		)
 
-	def refresh_response(self):
-		raise NotImplementedError
+	def refresh_response(self) -> None:
+		for qid in self.question_ids():
+			self.response_choices[qid] = None
 
 	def get_response_vector(self) -> np.ndarray:
 		return self.qam.convert_response_to_vector(self.response_choices)

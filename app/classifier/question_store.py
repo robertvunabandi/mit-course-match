@@ -26,7 +26,7 @@ class QuestionStore:
 	):
 		assert type(question) == str, "question must be a string"
 		assert type(answer_choices) == list, "answer_choice must be a list"
-		assert len(answer_choices) > 1, "need at least 2 choices per question"
+		assert len(answer_choices) > 1, "need at least 2 response_choices per question"
 		vec_length = None
 		for tup in answer_choices:
 			assert len(tup) == 2, "each item in answer_choices must be a tuple"

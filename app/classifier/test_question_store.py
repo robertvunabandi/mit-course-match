@@ -20,12 +20,12 @@ class TestQuestionStore(unittest.TestCase):
 	def test_assert_valid_inputs_03_should_raise(self):
 		try:
 			qs.QuestionStore.assert_valid_inputs('chocolate', [('yes', [1, 2])])
-			self.fail("should have failed because need at least 2 choices")
+			self.fail("should have failed because need at least 2 response_choices")
 		except AssertionError:
 			pass
 
 	def test_assert_valid_inputs_04_should_raise(self):
-		m = "should have failed because inconsistent dimensions across choices"
+		m = "should have failed because inconsistent dimensions across response_choices"
 		try:
 			qs.QuestionStore.assert_valid_inputs(
 				'chocolate',

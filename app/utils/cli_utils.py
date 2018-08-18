@@ -12,12 +12,12 @@ def r_input(
 	color_outputs: bool = True
 ) -> str:
 	"""
-	input that is restricted (thus the "r") only to the choices given
+	input that is restricted (thus the "r") only to the response_choices given
 	above
 	:param prompt: message to show on the prompt
-	:param choices: the choices we can use
+	:param choices: the response_choices we can use
 	:param invalid_input_message:
-		message to show when choices don't match
+		message to show when response_choices don't match
 	:param color_outputs:
 		if set to true, this boolean will color both the prompt and
 		the error if an error happens
@@ -27,13 +27,13 @@ def r_input(
 		is_among_choices_func = lambda choice: choice in choice_set
 		if invalid_input_message is None:
 			invalid_input_message = \
-				"Please, enter only choices in the set " \
+				"Please, enter only response_choices in the set " \
 				"{%s}." % str(choice_set)
 	elif choices is None:
 		is_among_choices_func = lambda choice: True
 	else:
 		assert isinstance(choices, Callable), \
-			"choices must either be Callable or Iterable"
+			"response_choices must either be Callable or Iterable"
 		is_among_choices_func = choices
 
 	if invalid_input_message is None:

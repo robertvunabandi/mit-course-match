@@ -50,6 +50,8 @@ class _DB:
 	what queries are called from the caller.
 	"""
 
+	# questions
+
 	@staticmethod
 	@_commit
 	def store_question(
@@ -82,6 +84,19 @@ class _DB:
 	@staticmethod
 	def question_exists_in_db(question: str) -> bool:
 		return _DB.question_id(question) is not None
+
+	# courses
+
+	@staticmethod
+	def load_courses():
+		data = (
+			TBLCol.course_id,
+			TBLCol.course_number,
+			TBLCol.course_name,
+			TBL.Courses
+		)
+		cursor.execute("SELECT %s, %s, %s FROM %s" % data)
+		return cursor.fetchall()
 
 	# Id and name getters
 
@@ -438,26 +453,15 @@ class _DB:
 			data[QID(qid)] = AID(aid)
 		return data
 
-	@staticmethod
-	def load_courses():
-		data = (
-			TBLCol.course_number,
-			TBLCol.course_name,
-			TBLCol.course_id,
-			TBL.Courses
-		)
-		cursor.execute("SELECT %s, %s, %s FROM %s" % data)
-		return cursor.fetchall()
-
 
 # Exposing functions that will be used publicly
 store_question = _DB.store_question
+load_courses = _DB.load_courses
 # TODO - REMOVE BELOW
 store_question_set = _DB.store_question_set
 load_question_set = _DB.load_question_set
 load_mapping_set = _DB.load_mapping_set
 store_mapping_set = _DB.store_mapping_set
-load_courses = _DB.load_courses
 store_response_set = _DB.store_response_set
 load_question_set_responses = _DB.load_question_set_responses
 load_response = _DB.load_response

@@ -17,7 +17,7 @@ def get_questions():
 		{
 			"question": "hello there",
 			"qid": 35,
-			"choices": [
+			"response_choices": [
 				{"choice": "Lemon", "aid": 46},
 				{"choice": "Almond", "aid": 55}
 			]
@@ -25,7 +25,7 @@ def get_questions():
 		{
 			"question": "okay tell me",
 			"qid": 24,
-			"choices": [
+			"response_choices": [
 				{"choice": "No", "aid": 41},
 				{"choice": "Yes", "aid": 31}
 			]

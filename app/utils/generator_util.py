@@ -19,14 +19,6 @@ def generate_response_salt() -> str:
 	return _generate_id(ALPHANUMERIC_ALPHABET, 10)
 
 
-def generate_question_set_name() -> str:
-	return _generate_id(ALPHANUMERIC_ALPHABET, 12)
-
-
-def generate_mapping_set_name() -> str:
-	return _generate_id(ALPHANUMERIC_ALPHABET, 8)
-
-
 def generate_question_set_extension() -> str:
 	return _generate_id(ALPHANUMERIC_ALPHABET, 4)
 

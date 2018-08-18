@@ -1,7 +1,8 @@
-from app.utils import number_utils
+from app.utils import generator_util
+from app.utils.db_utils import convert_to_query_values
 from app.db.sql import cursor, cnx
 from app.db.sql_constants import TBL, TBLCol
-from typing import List, Callable, Tuple, Set, Dict
+from typing import List, Callable, Tuple, Set, Dict, Union
 from app.classifier.custom_types import (
 	SChoice,
 	SVector,
@@ -15,6 +16,7 @@ from app.classifier.custom_types import (
 	MSID,
 	QSID,
 )
+from app.utils import number_utils # todo - remove this when not needed anymore
 
 from app.utils.string_util import quote
 import app.db.db_initializer as db_initializer
@@ -85,6 +87,14 @@ class _DB:
 	def question_exists_in_db(question: str) -> bool:
 		return _DB.question_id(question) is not None
 
+	@staticmethod
+	def load_questions() -> List[Tuple[QID, SQuestion]]:
+		cursor.execute(
+			"SELECT %s, %s FROM %s" %
+			(TBLCol.question_id, TBLCol.question, TBL.Questions)
+		)
+		return cursor.fetchall()
+
 	# courses
 
 	@staticmethod
@@ -147,10 +157,48 @@ class _DB:
 			data[QID(qid)] = AID(aid)
 		return data
 
+	@staticmethod
+	@_commit
+	def store_response(
+		response: Dict[QID, RID],
+		cn: SCourseNumber = None,
+	) -> RID:
+		salt = _DB.create_unique_response_salt()
+		data = (
+			TBL.Responses,
+			TBLCol.course_number,
+			TBLCol.response_salt,
+			"NULL" if cn is None else cn,
+			salt,
+		)
+		cursor.execute("INSERT INTO %s (%s, %s) VALUES (%s, %s)" % data)
+		rid = RID(_DB.response_id(salt))
+		values = [(rid, qid, response[qid]) for qid in response]
+		data = (
+			TBL.ResponseMappings,
+			TBLCol.response_id,
+			TBLCol.question_id,
+			TBLCol.answer_id,
+			convert_to_query_values(values),
+		)
+		cursor.execute("INSERT INTO %s (%s, %s, %s) VALUES %s;" % data)
+		return rid
+
+	@staticmethod
+	def create_unique_response_salt() -> str:
+		cursor.execute(
+			"SELECT %s FROM %s" %
+			(TBLCol.response_salt, TBL.Responses)
+		)
+		return generator_util.generate_unique_id(
+			set(el[0] for el in cursor.fetchall()),
+			generator_util.generate_response_salt,
+		)
+
 	# id and name getters
 
 	@staticmethod
-	def question_id(question: str) -> int or None:
+	def question_id(question: str) -> Union[QID, int, None]:
 		return _DB.get_unique_field(
 			tbl=TBL.Questions,
 			unique_col_name=TBLCol.question_id,
@@ -159,7 +207,7 @@ class _DB:
 		)
 
 	@staticmethod
-	def response_id(response_salt: str) -> int or None:
+	def response_id(response_salt: str) -> Union[RID, int, None]:
 		return _DB.get_unique_field(
 			tbl=TBL.Responses,
 			unique_col_name=TBLCol.response_id,
@@ -327,19 +375,6 @@ class _DB:
 		return set(el[0] for el in cursor.fetchall())
 
 	@staticmethod
-	def get_all_response_salts() -> Set[str]:
-		data = (TBLCol.response_salt, TBL.Responses)
-		cursor.execute('SELECT %s FROM %s' % data)
-		return set(el[0] for el in cursor.fetchall())
-
-	@staticmethod
-	def create_response_salt_unique() -> str:
-		return number_utils.generate_unique_id(
-			_DB.get_all_response_salts(),
-			number_utils.generate_response_salt
-		)
-
-	@staticmethod
 	def create_or_make_ms_name_unique(ms_name: str = None) -> str:
 		return _DB.create_or_make_name_unique(
 			ms_name,
@@ -486,10 +521,11 @@ class _DB:
 
 
 # Exposing functions that will be used publicly
-store_question = _DB.store_question
 load_courses = _DB.load_courses
 load_response = _DB.load_response
 load_labelled_responses = _DB.load_labelled_responses
+store_question = _DB.store_question
+store_response = _DB.store_response
 # TODO - REMOVE BELOW
 store_question_set = _DB.store_question_set
 load_question_set = _DB.load_question_set

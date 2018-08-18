@@ -2,6 +2,7 @@ from app.utils import number_utils
 import numpy as np
 from typing import Iterable, Tuple, List, Dict, Set
 from app.db import database
+from app.utils.deprecate_util import deprecated
 from app.classifier.custom_types import (
 	Vector,
 	SCourseNumber,
@@ -13,13 +14,13 @@ from app.classifier.custom_types import (
 	QSID,
 	MSID,
 	SQuestion,
-	SChoice
+	SChoice,
 )
 
 
 # ------------------------------------------------------------
 # ------------------------------------------------------------
-
+@deprecated(reason="moved to new model. see data_manager.py")
 class CourseObj:
 	def __init__(self) -> None:
 		self.cid_to_course: Dict[CID, Tuple[SCourseNumber, SCourse]] = None
@@ -45,8 +46,8 @@ class CourseObj:
 		self.course_count = len(cids)
 
 	def get_course_vector(
-			self,
-			course_identifier: CID or SCourse or SCourseNumber) -> np.ndarray:
+		self,
+		course_identifier: CID or SCourse or SCourseNumber) -> np.ndarray:
 		cid = self.cid_resolver[course_identifier]
 		if cid in self.cid_to_vector:
 			return self.cid_to_vector[cid]
@@ -55,15 +56,15 @@ class CourseObj:
 		return self.get_course_vector(cid)
 
 	def get_course_bundle(
-			self,
-			cid_identifier: CID or SCourse or SCourseNumber) -> Tuple[CID, SCourseNumber, SCourse]:
+		self,
+		cid_identifier: CID or SCourse or SCourseNumber) -> Tuple[CID, SCourseNumber, SCourse]:
 		cid = self.cid_resolver[cid_identifier]
 		cn, course = self.cid_to_course[cid]
 		return cid, cn, course
 
 	def get_course_index(
-			self,
-			cid_identifier: CID or SCourse or SCourseNumber) -> int:
+		self,
+		cid_identifier: CID or SCourse or SCourseNumber) -> int:
 		return self.cid_to_index[self.cid_resolver[cid_identifier]]
 
 	def cid(self, cid_identifier: CID or SCourse or SCourseNumber) -> CID:
@@ -74,6 +75,7 @@ class CourseObj:
 			yield cid
 
 
+@deprecated(reason="moved to new model. see data_manager.py")
 class QuestionAnswerManager:
 	def __init__(self, qsid: QSID, msid: MSID) -> None:
 		self.qsid, self.msid = qsid, msid
@@ -173,9 +175,9 @@ class QuestionAnswerManager:
 		return self.question_dimension_map[self.qid_resolver[q_identifier]]
 
 	def answer_vector(
-			self,
-			q_identifier: QID or SQuestion,
-			aid_identifier: AID or SChoice) -> np.ndarray:
+		self,
+		q_identifier: QID or SQuestion,
+		aid_identifier: AID or SChoice) -> np.ndarray:
 		qid = self.qid_resolver[q_identifier]
 		aid = self.aid_resolver[qid][aid_identifier]
 		return self.answer_to_vector_map[qid][aid]
@@ -187,9 +189,9 @@ class QuestionAnswerManager:
 		return self.qid_resolver[qid_indentifier]
 
 	def get_aid(
-			self,
-			qid_identifier: QID or SQuestion,
-			aid_identifier: AID or SChoice) -> AID:
+		self,
+		qid_identifier: QID or SQuestion,
+		aid_identifier: AID or SChoice) -> AID:
 		return self.aid_resolver[self.get_qid(qid_identifier)][aid_identifier]
 
 	def question_ids(self) -> Iterable[QID]:
@@ -205,6 +207,7 @@ class QuestionAnswerManager:
 		return self._input_dimension
 
 
+@deprecated(reason="moved to new model. see data_manager.py")
 class DataManager:
 	def __init__(self, qsid: QSID, msid: MSID) -> None:
 		number_utils.assert_valid_db_id(qsid, QSID.__name__)
@@ -233,9 +236,9 @@ class DataManager:
 		return self.course_obj.course_count
 
 	def set_answer(
-			self,
-			qid_identifier: SQuestion or QID,
-			aid_identifier: SChoice or AID) -> None:
+		self,
+		qid_identifier: SQuestion or QID,
+		aid_identifier: SChoice or AID) -> None:
 		index = self.qa_manager.question_index(qid_identifier)
 		vector = self.qa_manager.answer_vector(qid_identifier, aid_identifier)
 		self.answer_vector[:, index:index + vector.shape[1]] = vector
@@ -266,8 +269,8 @@ class DataManager:
 		return np.vstack(data), np.vstack(labels)
 
 	def vector_from_responses(
-			self,
-			response: Dict[QID or SQuestion, AID or SChoice]) -> np.ndarray:
+		self,
+		response: Dict[QID or SQuestion, AID or SChoice]) -> np.ndarray:
 		self.refresh_responses()
 		for qid_identifier in response:
 			self.set_answer(qid_identifier, response[qid_identifier])
@@ -276,8 +279,8 @@ class DataManager:
 		return vector
 
 	def store_responses(
-			self,
-			cid_identifier: SCourse or CID or SCourseNumber = None) -> None:
+		self,
+		cid_identifier: SCourse or CID or SCourseNumber = None) -> None:
 		course_bundle = None
 		if cid_identifier is not None:
 			course_bundle = self.course_obj.get_course_bundle(cid_identifier)
@@ -300,12 +303,3 @@ class DataManager:
 
 	def course_ids(self) -> Iterable[CID]:
 		yield from self.course_obj.course_ids()
-
-
-if __name__ == '__main__':
-	dp = DataManager(QSID(3), MSID(2))
-	print(dp.answer_vector)
-	print(dp.input_dimension)
-	print(dp.output_dimension)
-	d, l = dp.load_training_data()
-	print(d, l)

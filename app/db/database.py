@@ -129,6 +129,24 @@ class _DB:
 			result[(rid, cn)] = dic
 		return result
 
+	@staticmethod
+	def load_response(rid: RID) -> Dict[QID, AID] or None:
+		data = (
+			TBLCol.question_id,
+			TBLCol.answer_id,
+			TBL.ResponseMappings,
+			TBLCol.response_id,
+			str(rid)
+		)
+		cursor.execute("SELECT %s, %s FROM %s WHERE %s = %s" % data)
+		rows = cursor.fetchall()
+		if len(rows) == 0:
+			return None
+		data = {}
+		for qid, aid in rows:
+			data[QID(qid)] = AID(aid)
+		return data
+
 	# id and name getters
 
 	@staticmethod
@@ -466,46 +484,16 @@ class _DB:
 			data[key][QID(qid)] = AID(aid)
 		return data
 
-	@staticmethod
-	def load_response(rid: RID) -> Dict[QID, AID] or None:
-		data = (
-			TBLCol.question_id,
-			TBLCol.answer_id,
-			TBL.ResponseMappings,
-			TBLCol.response_id,
-			str(rid)
-		)
-		cursor.execute("SELECT %s, %s FROM %s WHERE %s = %s" % data)
-		rows = cursor.fetchall()
-		if len(rows) == 0:
-			return None
-		data = {}
-		for qid, aid in rows:
-			data[QID(qid)] = AID(aid)
-		return data
-
 
 # Exposing functions that will be used publicly
 store_question = _DB.store_question
 load_courses = _DB.load_courses
+load_response = _DB.load_response
 load_labelled_responses = _DB.load_labelled_responses
 # TODO - REMOVE BELOW
 store_question_set = _DB.store_question_set
 load_question_set = _DB.load_question_set
+store_response_set = _DB.store_response_set
 load_mapping_set = _DB.load_mapping_set
 store_mapping_set = _DB.store_mapping_set
-store_response_set = _DB.store_response_set
 load_question_set_responses = _DB.load_question_set_responses
-load_response = _DB.load_response
-
-if __name__ == '__main__':
-	# cursor.execute('SELECT * FROM Questions WHERE question = \'coffee?\';')
-	# print(cursor.fetchall())
-	# DB.store_question('Ice Cream?', ['nah', 'YEAH', 'hell no'])
-	# cursor.execute('SELECT aid, qid, choice FROM AnswerChoices;')
-	# print(cursor.fetchall())
-	# print(_DB.answer_choices_for_question('coffee?'))
-	# print(_DB.load_mapping_set(MSID(2)))
-	cursor.execute("SELECT * FROM QuestionSets")
-	rows = cursor.fetchall()
-	print(rows)

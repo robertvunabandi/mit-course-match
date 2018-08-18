@@ -69,7 +69,7 @@ class _DBInitializer:
 		responses_data = (
 			TBL.Responses,
 			TBLCol.response_id,
-			TBLCol.course_name,
+			TBLCol.course_number,
 			TBLCol.response_salt,
 			TBLCol.time_created,
 		)

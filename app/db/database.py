@@ -88,7 +88,7 @@ class _DB:
 	# courses
 
 	@staticmethod
-	def load_courses():
+	def load_courses() -> List[Tuple[CID, SCourseNumber, SCourse]]:
 		data = (
 			TBLCol.course_id,
 			TBLCol.course_number,
@@ -98,7 +98,38 @@ class _DB:
 		cursor.execute("SELECT %s, %s, %s FROM %s" % data)
 		return cursor.fetchall()
 
-	# Id and name getters
+	# responses
+
+	@staticmethod
+	def load_labelled_responses() -> Dict[Tuple[RID, SCourseNumber], Dict[QID, AID]]:
+		data = (
+			TBLCol.response_id,
+			TBLCol.course_number,
+			TBLCol.question_id,
+			TBLCol.answer_id,
+			TBL.Responses,
+			TBL.ResponseMappings,
+			TBLCol.response_id,
+			TBLCol.response_id,
+			TBLCol.course_number,
+		)
+		cursor.execute("""
+			SELECT a.%s, b.%s, b.%s, b.%s 
+			FROM %s a 
+				JOIN %s b ON a.%s = b.%s
+			WHERE
+				a.%s IS NOT NULL
+		""" % data)
+		result = {}
+		for rid_, cn_, qid_, aid_ in cursor.fetchall():
+			rid, cn, qid, aid = \
+				RID(rid_), SCourseNumber(cn_), QID(qid_), AID(aid_)
+			dic = result.get((rid, cn), {})
+			dic[qid] = aid
+			result[(rid, cn)] = dic
+		return result
+
+	# id and name getters
 
 	@staticmethod
 	def question_id(question: str) -> int or None:
@@ -457,6 +488,7 @@ class _DB:
 # Exposing functions that will be used publicly
 store_question = _DB.store_question
 load_courses = _DB.load_courses
+load_labelled_responses = _DB.load_labelled_responses
 # TODO - REMOVE BELOW
 store_question_set = _DB.store_question_set
 load_question_set = _DB.load_question_set

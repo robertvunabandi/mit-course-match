@@ -1,4 +1,4 @@
-from typing import Iterable, Dict
+from typing import Union, Iterable, Dict, List, Tuple
 from app.classifier.custom_types import (
 	SQuestion,
 	SChoice,
@@ -7,9 +7,11 @@ from app.classifier.custom_types import (
 	QID,
 	AID,
 	CID,
+	RID,
 )
 from app.classifier.course_manager import CourseManager
 from app.classifier.question_answer_manager import QuestionAnswerManager
+from app.db import database
 import numpy as np
 
 
@@ -53,11 +55,24 @@ class DataManager:
 	def refresh_response(self):
 		raise NotImplementedError
 
-	def vector_from_response(self) -> np.ndarray:
+	def get_response_vector(self) -> np.ndarray:
 		return self.qam.convert_response_to_vector(self.response_choices)
 
-	def load_training_data(self):
-		pass
+	def load_training_data(
+		self
+	) -> Union[Tuple[None, None], Tuple[np.ndarray, np.ndarray]]:
+		responses: Dict[Tuple[RID, SCourseNumber], Dict[QID, AID]] = \
+			database.load_labelled_responses()
+		data: List[np.ndarray] = []
+		labels: List[np.ndarray] = []
+		for (rid, cid) in responses:
+			data.append(
+				self.qam.convert_response_to_vector(responses[(rid, cid)])
+			)
+			labels.append(self.cm.get_course_vector(cid))
+		if len(data) == 0:
+			return None, None
+		return np.vstack(data), np.vstack(labels)
 
 	def question_ids(self) -> Iterable[QID]:
 		yield from self.qam.question_ids()

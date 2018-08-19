@@ -5,7 +5,7 @@ from typing import Callable
 from app.db.sql_constants import TBL, TBLCol
 import app.db.database as database
 from app.db.mit_courses import mit_courses
-from app.utils.string_util import quote
+from app.utils.db_utils import convert_int_list_to_vector_text
 
 
 def setup():
@@ -271,12 +271,13 @@ class TestDatabase(unittest.TestCase):
 		choices = \
 			[("no one", "0,0,1"), ("someone", "0,1,0"), ("errone", "1,0,0")]
 		database.store_question(question, choices)
-		# List[Tuple[QID, SQuestion, List[Tuple[AID, SChoice, SVector]]]]
+		# List[Tuple[QID, SQuestion, List[Tuple[AID, SChoice, List[int]]]]
 		questions = database.load_questions()
 		qid_db, q_db, answers = questions[0]
 		self.assertEqual(q_db, question)
 		for aid, choice, vector in answers:
-			self.assertTrue((choice, vector) in choices)
+			s_vector = convert_int_list_to_vector_text(vector)
+			self.assertTrue((choice, s_vector) in choices)
 
 
 if __name__ == '__main__':

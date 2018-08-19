@@ -1,4 +1,5 @@
-from typing import List, Iterable, Hashable, Callable
+from typing import List, Iterable, Hashable, Callable, Union
+from app.classifier.custom_types import SVector
 
 
 def convert_to_query_values(
@@ -21,3 +22,11 @@ def convert_to_query_values(
 		"(" + ", ".join([str(component_fxn(el)) for el in item]) + ")"
 		for item in array
 	])
+
+
+def convert_vector_text_to_int_list(s_vector: Union[SVector, str]) -> List[int]:
+	return [int(i) for i in s_vector.split(",")]
+
+
+def convert_int_list_to_vector_text(vector: List[int]) -> SVector:
+	return SVector(",".join([str(i) for i in vector]))

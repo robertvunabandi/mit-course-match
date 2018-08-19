@@ -16,7 +16,8 @@ from app.classifier.custom_types import (
 	MSID,
 	QSID,
 )
-from app.utils import number_utils # todo - remove this when not needed anymore
+from app.utils import number_utils  # todo - remove this when not needed anymore
+from app.utils.db_utils import convert_vector_text_to_int_list
 
 from app.utils.string_util import quote
 import app.db.db_initializer as db_initializer
@@ -90,7 +91,7 @@ class _DB:
 
 	@staticmethod
 	def load_questions(
-	) -> List[Tuple[QID, SQuestion, List[Tuple[AID, SChoice, SVector]]]]:
+	) -> List[Tuple[QID, SQuestion, List[Tuple[AID, SChoice, List[int]]]]]:
 		data = (
 			TBLCol.question_id,
 			TBLCol.question,
@@ -106,10 +107,12 @@ class _DB:
 			"SELECT a.%s, a.%s, b.%s, b.%s, b.%s FROM %s a JOIN %s b ON a.%s = b.%s" %
 			data
 		)
-		result: Dict[Tuple[QID, SQuestion], List[Tuple[AID, SChoice, SVector]]] = {}
+		result = {}
 		for qid, question, aid, choice, vector in cursor.fetchall():
 			question_list = result.get((qid, question), [])
-			question_list.append((aid, choice, vector))
+			question_list.append(
+				(aid, choice, convert_vector_text_to_int_list(vector))
+			)
 			result[(qid, question)] = question_list
 		return [
 			(qid, question, result[(qid, question)])

@@ -26,7 +26,7 @@ class Classifier:
 	"""
 
 	def __init__(self, nn_hidden_layers=((100, relu), (50, relu))) -> None:
-		self.data_manager_ = DataManager()
+		self.data_manager = DataManager()
 		self.data: np.ndarray = None
 		self.label: np.ndarray = None
 		self._classifier: Sequential = None
@@ -50,7 +50,7 @@ class Classifier:
 		self._classifier.add(Dense(
 			units=first_hidden_layer_unit_count,
 			activation=activation,
-			input_dim=self.data_manager_.input_dimension()
+			input_dim=self.data_manager.input_dimension()
 		))
 		for hidden_layer_unit_count, activation in nn_hidden_layers[1:]:
 			self._classifier.add(Dense(
@@ -58,7 +58,7 @@ class Classifier:
 				activation=activation
 			))
 		self._classifier.add(Dense(
-			units=self.data_manager_.output_dimension(),
+			units=self.data_manager.output_dimension(),
 			activation=softmax
 		))
 
@@ -78,7 +78,7 @@ class Classifier:
 		train the _classifier based on the data that we currently have
 		"""
 		if self.data is None:
-			self.data, self.label = self.data_manager_.load_training_data()
+			self.data, self.label = self.data_manager.load_training_data()
 		if self.data is not None and self.label is not None:
 			self._classifier.fit(
 				self.data,
@@ -99,10 +99,10 @@ class Classifier:
 			this will throw an error if some key in the dictionary
 			are missing. That is intentional.
 		"""
-		for qid in self.data_manager_.question_ids():
-			self.data_manager_.set_answer(qid, answer_map[qid])
-		self.data_manager_.store_response(cid_identifier)
-		self.data_manager_.refresh_response()
+		for qid in self.data_manager.question_ids():
+			self.data_manager.set_answer(qid, answer_map[qid])
+		self.data_manager.store_response(cid_identifier)
+		self.data_manager.refresh_response()
 
 	def predict_from_rid(
 		self,
@@ -112,7 +112,7 @@ class Classifier:
 		if response is None:
 			raise KeyError("rid not found in database -> %s" % str(rid))
 		vector: np.ndarray = \
-			self.data_manager_.qam.convert_response_to_vector(response)
+			self.data_manager.qam.convert_response_to_vector(response)
 		return self.predict_ranking(vector)
 
 	def predict_ranking(
@@ -137,8 +137,8 @@ class Classifier:
 		prediction_tuples = [
 			(
 				cid,
-				predictions[0, self.data_manager_.cm.get_course_index(cid)]
-			) for cid in list(self.data_manager_.course_ids())
+				predictions[0, self.data_manager.cm.get_course_index(cid)]
+			) for cid in list(self.data_manager.course_ids())
 		]
 		courses_sorted_by_probability = sorted(
 			prediction_tuples,
@@ -146,6 +146,6 @@ class Classifier:
 		)
 		ranking = []
 		for cid, probability in courses_sorted_by_probability:
-			cid, cn, course = self.data_manager_.cm.get_course_bundle(cid)
+			cid, cn, course = self.data_manager.cm.get_course_bundle(cid)
 			ranking.append((cn, course, probability))
 		return ranking

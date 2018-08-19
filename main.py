@@ -1,6 +1,7 @@
 import os
 import config
 from app import app
+import app.db.database as database
 
 
 def set_config_variables():
@@ -12,5 +13,6 @@ def set_config_variables():
 
 if __name__ == '__main__':
 	set_config_variables()
+	database.initialize_database()
 	port = int(os.environ.get("PORT", 5000))
 	app.run(host='0.0.0.0', port=port)

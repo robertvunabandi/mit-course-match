@@ -11,7 +11,7 @@
  * - The quiz will take in questions and then manage itself with a
  *   few external endpoints to get answered questions and such.
  * */
-/* global React, ReactDOM, APP, UTIL */
+/* global React, ReactDOM, APP, UTIL, API */
 /* global RCSeparator, RCLineSeparator, RCPaddedLineSeparator */
 
 const QuizConfig = {
@@ -21,18 +21,10 @@ const QuizConfig = {
 window.addEventListener(APP.events.mainDone.type, loadQuiz);
 
 function loadQuiz() {
-  // load questions via API call, todo - write API from 6.148
-  const quiz = React.createElement(Quiz, { questions: [{
-      question: "hello there",
-      qid: 35,
-      choices: [{ choice: "Lemon", aid: 46 }, { choice: "Almond", aid: 55 }]
-    }, {
-      question: "okay tell me",
-      qid: 24,
-      choices: [{ choice: "No", aid: 41 }, { choice: "Yes", aid: 31 }]
-    }] });
-
-  ReactDOM.render(quiz, document.querySelector("#" + APP.ids.content));
+  API.get("/questions", {}, function (questions) {
+    const quiz = React.createElement(Quiz, { questions: questions });
+    ReactDOM.render(quiz, document.querySelector("#" + APP.ids.content));
+  });
 }
 
 class Quiz extends React.Component {

@@ -26,7 +26,7 @@ def questions():
 		json_data.append({
 			"qid": qid,
 			"question": question,
-			"response_choices": [{
+			"choices": [{
 				"choice": choice,
 				"aid": aid,
 			} for aid, choice, _ in answers]

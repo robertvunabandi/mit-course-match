@@ -1,2 +1,0 @@
-class ExistingQuestionError(Exception):
-	pass

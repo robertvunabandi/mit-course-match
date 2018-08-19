@@ -65,7 +65,7 @@ class Classifier:
 		self._classifier.compile(
 			loss=categorical_crossentropy,
 			optimizer=Adam(),
-			metrics=['accuracy']
+			metrics=["accuracy"]
 		)
 
 	def train(

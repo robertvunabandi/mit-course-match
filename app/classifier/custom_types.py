@@ -6,7 +6,7 @@ class Vector(np.ndarray):
 	@staticmethod
 	def assert_is_np_array(
 			vec: np.ndarray,
-			err_msg: str = 'this is not a numpy array') -> None:
+			err_msg: str = "this is not a numpy array") -> None:
 		assert isinstance(vec, np.ndarray), err_msg
 
 	@staticmethod
@@ -88,37 +88,37 @@ they are just strings.
 
 class SQSName(SpecialString):
 	def __repr__(self):
-		return 'QuestionSetName:' + super(SQSName, self).__repr__()
+		return "QuestionSetName:" + super(SQSName, self).__repr__()
 
 
 class SMSName(SpecialString):
 	def __repr__(self):
-		return 'MappingSetName:' + super(SMSName, self).__repr__()
+		return "MappingSetName:" + super(SMSName, self).__repr__()
 
 
 class SQuestion(SpecialString):
 	def __repr__(self):
-		return 'Question:' + super(SQuestion, self).__repr__()
+		return "Question:" + super(SQuestion, self).__repr__()
 
 
 class SCourse(SpecialString):
 	def __repr__(self):
-		return 'Course:' + super(SCourse, self).__repr__()
+		return "Course:" + super(SCourse, self).__repr__()
 
 
 class SChoice(SpecialString):
 	def __repr__(self):
-		return 'AnswerChoice:' + super(SChoice, self).__repr__()
+		return "AnswerChoice:" + super(SChoice, self).__repr__()
 
 
 class SVector(SpecialString):
 	def __repr__(self):
-		return 'ChoiceVector:' + super(SVector, self).__repr__()
+		return "ChoiceVector:" + super(SVector, self).__repr__()
 
 
 class SCourseNumber(SpecialString):
 	def __repr__(self):
-		return 'CourseNumber:' + super(SCourseNumber, self).__repr__()
+		return "CourseNumber:" + super(SCourseNumber, self).__repr__()
 
 
 """
@@ -136,34 +136,34 @@ class SpecialInt(int):
 
 class IntID(SpecialInt):
 	def __repr__(self):
-		return 'ID:' + super(IntID, self).__repr__()
+		return "ID:" + super(IntID, self).__repr__()
 
 
 class QID(IntID):
 	def __repr__(self):
-		return 'Q' + super(QID, self).__repr__()
+		return "Q" + super(QID, self).__repr__()
 
 
 class AID(IntID):
 	def __repr__(self):
-		return 'A' + super(AID, self).__repr__()
+		return "A" + super(AID, self).__repr__()
 
 
 class QSID(IntID):
 	def __repr__(self):
-		return 'QS' + super(QSID, self).__repr__()
+		return "QS" + super(QSID, self).__repr__()
 
 
 class RID(IntID):
 	def __repr__(self):
-		return 'R' + super(RID, self).__repr__()
+		return "R" + super(RID, self).__repr__()
 
 
 class CID(IntID):
 	def __repr__(self):
-		return 'C' + super(CID, self).__repr__()
+		return "C" + super(CID, self).__repr__()
 
 
 class MSID(IntID):
 	def __repr__(self):
-		return 'MS' + super(MSID, self).__repr__()
+		return "MS" + super(MSID, self).__repr__()

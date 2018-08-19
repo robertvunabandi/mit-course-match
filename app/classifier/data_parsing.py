@@ -130,7 +130,7 @@ class QuestionAnswerManager:
 		input_dimension_contributions = {}
 		aids = set()
 		for qid, aid, vector_text in database.load_mapping_set(self.msid):
-			vector = np.array([[int(el) for el in vector_text.split(',')]])
+			vector = np.array([[int(el) for el in vector_text.split(",")]])
 			question_dimension_map[qid] = question_dimension_map.get(qid, None)
 			answer_to_vector_map[qid] = answer_to_vector_map.get(qid, {})
 			answer_to_vector_map[qid][aid] = vector
@@ -293,7 +293,7 @@ class DataManager:
 	def assert_all_questions_answered(self):
 		for qid in self.raw_responses:
 			assert self.raw_responses.get(qid, None) is not None, \
-				'the answer with qid %s is not answered' % str(qid)
+				"the answer with qid %s is not answered" % str(qid)
 
 	def question_ids(self) -> Iterable[QID]:
 		yield from self.qa_manager.question_ids()

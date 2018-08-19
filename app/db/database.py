@@ -60,7 +60,7 @@ class _DB:
 		choices: List[Tuple[str, str]]
 	) -> Tuple[QID, SQuestion, List[Tuple[SChoice, SVector]]]:
 		if _DB.question_exists_in_db(question):
-			raise ValueError('this question already exists in the database')
+			raise ValueError("this question already exists in the database")
 		data = (TBL.Questions, TBLCol.question, question)
 		cursor.execute("INSERT INTO %s (%s) VALUES ('%s')" % data)
 		question_id = _DB.question_id(question)

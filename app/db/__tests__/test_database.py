@@ -5,6 +5,7 @@ from typing import Callable
 from app.db.sql_constants import TBL, TBLCol
 import app.db.database as database
 from app.db.mit_courses import mit_courses
+from app.utils.string_util import quote
 
 
 def setup():
@@ -238,6 +239,44 @@ class TestDatabase(unittest.TestCase):
 			(course_count_before, course_count_before + 2, course_count_after)
 		)
 		mit_courses_.mit_courses = mit_courses_.mit_courses[:-2]
+
+	def test_load_courses(self):
+		TestDatabase.drop_all_tables()
+		try:
+			database.initialize_database()
+		except Exception as exception:
+			print(exception)
+			self.fail("initialization raised an error")
+		import app.db.mit_courses as mit_courses_
+		course_in_db = \
+			set((cn, course) for cid, cn, course in database.load_courses())
+		missing_courses = [
+			(cn, course)
+			for cn, course in mit_courses_.mit_courses
+			if (cn, course) not in course_in_db
+		]
+		self.assertTrue(
+			len(missing_courses) == 0,
+			"the courses %s are missing in the db" % repr(missing_courses),
+		)
+
+	def test_store_and_load_question(self):
+		TestDatabase.drop_all_tables()
+		try:
+			database.initialize_database()
+		except Exception as exception:
+			print(exception)
+			self.fail("initialization raised an error")
+		question = "who are you"
+		choices = \
+			[("no one", "0,0,1"), ("someone", "0,1,0"), ("errone", "1,0,0")]
+		database.store_question(question, choices)
+		# List[Tuple[QID, SQuestion, List[Tuple[AID, SChoice, SVector]]]]
+		questions = database.load_questions()
+		qid_db, q_db, answers = questions[0]
+		self.assertEqual(q_db, question)
+		for aid, choice, vector in answers:
+			self.assertTrue((choice, vector) in choices)
 
 
 if __name__ == '__main__':

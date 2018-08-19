@@ -69,6 +69,7 @@ class _DB:
 			TBL.AnswerChoices,
 			TBLCol.question_id,
 			TBLCol.choice,
+			TBLCol.vector,
 			', '.join([
 				"(" + ",".join([
 					str(question_id),
@@ -78,7 +79,7 @@ class _DB:
 				for choice, vector in choices
 			])
 		)
-		cursor.execute("INSERT INTO %s (%s, %s) VALUES %s;" % data)
+		cursor.execute("INSERT INTO %s (%s, %s, %s) VALUES %s;" % data)
 		answers = \
 			[(SChoice(choice), SVector(vector)) for choice, vector in choices]
 		return QID(question_id), SQuestion(question), answers
@@ -89,25 +90,26 @@ class _DB:
 
 	@staticmethod
 	def load_questions(
-	) -> List[Tuple[QID, SQuestion, List[Tuple[AID, SChoice]]]]:
+	) -> List[Tuple[QID, SQuestion, List[Tuple[AID, SChoice, SVector]]]]:
 		data = (
 			TBLCol.question_id,
 			TBLCol.question,
 			TBLCol.answer_id,
 			TBLCol.choice,
+			TBLCol.vector,
 			TBL.Questions,
 			TBL.AnswerChoices,
 			TBLCol.question_id,
 			TBLCol.question_id,
 		)
 		cursor.execute(
-			"SELECT a.%s, a.%s, b.%s, b.%s FROM %s a JOIN %s b ON a.%s = b.%s" %
+			"SELECT a.%s, a.%s, b.%s, b.%s, b.%s FROM %s a JOIN %s b ON a.%s = b.%s" %
 			data
 		)
-		result: Dict[Tuple[QID, SQuestion], List[Tuple[AID, SChoice]]] = {}
-		for qid, question, aid, answer_choice in cursor.fetchall():
+		result: Dict[Tuple[QID, SQuestion], List[Tuple[AID, SChoice, SVector]]] = {}
+		for qid, question, aid, choice, vector in cursor.fetchall():
 			question_list = result.get((qid, question), [])
-			question_list.append((aid, answer_choice))
+			question_list.append((aid, choice, vector))
 			result[(qid, question)] = question_list
 		return [
 			(qid, question, result[(qid, question)])
@@ -541,9 +543,9 @@ class _DB:
 
 # Exposing functions that will be used publicly
 load_courses = _DB.load_courses
+load_questions = _DB.load_questions
 load_response = _DB.load_response
 load_labelled_responses = _DB.load_labelled_responses
-load_questions = _DB.load_questions
 store_question = _DB.store_question
 store_response = _DB.store_response
 # TODO - REMOVE BELOW

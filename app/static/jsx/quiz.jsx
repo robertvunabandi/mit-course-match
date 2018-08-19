@@ -120,6 +120,11 @@ class QuizQuestionDisplay extends React.Component {
     super(props);
   }
 
+  handleClick(e) {
+    console.log(this);
+    console.log(e);
+  }
+
   render() {
     return (
       <span className={"quiz-question-display"}>
@@ -131,7 +136,11 @@ class QuizQuestionDisplay extends React.Component {
           {this.props.choices.map(
             (answer) => {
               return (
-                <QuizAnswerChoice choice={answer.choice} aid={answer.aid}/>
+                <QuizAnswerChoice
+                  choice={answer.choice}
+                  aid={answer.aid}
+                  onClick={this.handleClick} /* todo - fix this later */
+                />
               );
             }
           )}

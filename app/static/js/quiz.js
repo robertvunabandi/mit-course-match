@@ -131,6 +131,11 @@ class QuizQuestionDisplay extends React.Component {
     super(props);
   }
 
+  handleClick(e) {
+    console.log(this);
+    console.log(e);
+  }
+
   render() {
     return React.createElement(
       "span",
@@ -143,7 +148,11 @@ class QuizQuestionDisplay extends React.Component {
         "span",
         { className: "quiz-choices" },
         this.props.choices.map(answer => {
-          return React.createElement(QuizAnswerChoice, { choice: answer.choice, aid: answer.aid });
+          return React.createElement(QuizAnswerChoice, {
+            choice: answer.choice,
+            aid: answer.aid,
+            onClick: this.handleClick /* todo - fix this later */
+          });
         })
       )
     );

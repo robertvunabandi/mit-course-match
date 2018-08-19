@@ -11,7 +11,7 @@ from app.classifier.custom_types import (
 )
 from app.db import database
 import numpy as np
-from app.classifier.data_manager import DataManager as DataManagerNew
+from app.classifier.data_manager import DataManager
 # for machine learning
 from keras.models import Sequential
 from keras.layers import Dense
@@ -26,7 +26,7 @@ class Classifier:
 	"""
 
 	def __init__(self, nn_hidden_layers=((100, relu), (50, relu))) -> None:
-		self.data_manager_ = DataManagerNew()
+		self.data_manager_ = DataManager()
 		self.data: np.ndarray = None
 		self.label: np.ndarray = None
 		self._classifier: Sequential = None

@@ -78,7 +78,7 @@ class _DB:
 					quote(str(vector))
 				]) + ")"
 				for choice, vector in choices
-			])
+			]),
 		)
 		cursor.execute("INSERT INTO %s (%s, %s, %s) VALUES %s;" % data)
 		answers = \
@@ -127,7 +127,7 @@ class _DB:
 			TBLCol.course_id,
 			TBLCol.course_number,
 			TBLCol.course_name,
-			TBL.Courses
+			TBL.Courses,
 		)
 		cursor.execute("SELECT %s, %s, %s FROM %s" % data)
 		return cursor.fetchall()
@@ -170,16 +170,13 @@ class _DB:
 			TBLCol.answer_id,
 			TBL.ResponseMappings,
 			TBLCol.response_id,
-			str(rid)
+			str(rid),
 		)
 		cursor.execute("SELECT %s, %s FROM %s WHERE %s = %s" % data)
 		rows = cursor.fetchall()
 		if len(rows) == 0:
 			return None
-		data = {}
-		for qid, aid in rows:
-			data[QID(qid)] = AID(aid)
-		return data
+		return {QID(qid): AID(aid) for qid, aid in rows}
 
 	@staticmethod
 	@_commit
@@ -257,8 +254,10 @@ class _DB:
 			unique_col_name from the database for the row with the unique
 			target_col_name equal to the target value
 		"""
-		data = (unique_col_name, tbl, target_col_name, target_value)
-		cursor.execute("SELECT %s FROM %s WHERE %s = %s" % data)
+		cursor.execute(
+			"SELECT %s FROM %s WHERE %s = %s" %
+			(unique_col_name, tbl, target_col_name, target_value)
+		)
 		row = cursor.fetchall()
 		if len(row) == 0:
 			return None

@@ -29,7 +29,7 @@ def questions():
 			"response_choices": [{
 				"choice": choice,
 				"aid": aid,
-			} for choice, aid in answers]
+			} for aid, choice, _ in answers]
 		})
 	return json.dumps(json_data)
 

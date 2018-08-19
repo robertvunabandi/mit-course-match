@@ -36,6 +36,7 @@ class Quiz extends React.Component {
       answered: 0,
       total: props.questions.length,
       questions: [],
+      answers: {},
     };
     props.questions.forEach(function (question) {
       question.answer_aid = null;
@@ -43,10 +44,11 @@ class Quiz extends React.Component {
     });
   }
 
-  getAnsweredQuestionsCount() {
+  getAnsweredQuestionsCount(answers) {
     let count = 0;
+    const self = this;
     this.state.questions.forEach(function (question) {
-      if (question.answer_aid) {
+      if (answers[question.qid]) {
         count += 1;
       }
     });
@@ -61,24 +63,53 @@ class Quiz extends React.Component {
    * @return int
    * */
   getUnansweredQuestionIndex() {
-    return UTIL.randomFromList(
+    let index = UTIL.randomFromList(
       this.state.questions
-        .map((question, index) => !question.answer_aid ? index : -1)
+        .map((question, index) => !this.state.answers[question.qid] ? index : -1)
         .filter((index) => index > -1)
     );
+    if (index === undefined) {
+      return -1;
+    }
+    return index;
+  }
+
+  setAnswer(qid, aid) {
+    const self = this;
+    this.setState((prevState, props) => {
+      const update = {answers: {}};
+      update.answers[qid] = aid;
+      for (let qid_ans in prevState.answers) {
+        if (Object.prototype.hasOwnProperty.call(prevState.answers, qid_ans)) {
+          update.answers[qid_ans] = prevState.answers[qid_ans];
+        }
+      }
+      update.answered = self.getAnsweredQuestionsCount(update.answers);
+      return update;
+    });
   }
 
   render() {
-    const question = this.state.questions[this.getUnansweredQuestionIndex()];
-    return (
-      <div className={"quiz"}>
-        <QuizState total={this.state.total} answered={this.state.answered}/>
-        <RCSeparator/>
+    const index = this.getUnansweredQuestionIndex();
+    let quiz_display = null;
+    if (index > -1) {
+      const question = this.state.questions[index];
+      quiz_display = (
         <QuizQuestionDisplay
           question={question.question}
           qid={question.qid}
           choices={question.choices}
+          setAnswer={(qid, aid) => this.setAnswer.call(this, qid, aid)}
         />
+      );
+    } else {
+      quiz_display = <QuizQuestionDisplayCompleted total={this.state.total}/>;
+    }
+    return (
+      <div className={"quiz"}>
+        <QuizState total={this.state.total} answered={this.state.answered}/>
+        <RCSeparator/>
+        {quiz_display}
       </div>
     );
   }
@@ -93,21 +124,23 @@ class QuizState extends React.Component {
   render() {
     return (
       <div className={"quiz-state"}>
-        <div>Progress:</div>
         <QuizProgressBar percentage={this.props.answered / this.props.total}/>
         <div>Answered {this.props.answered} out of {this.props.total}</div>
-      </div>);
+      </div>
+    );
   }
 }
 
 class QuizProgressBar extends React.Component {
   render() {
+    console.log(this.props.percentage.toFixed(4) * 100);
     return (
       <div className={"quiz-progress-bar"}>
-        <span>
+        <span style={{width: this.props.percentage.toFixed(4) * 100 + "%"}}>
           {(this.props.percentage.toFixed(4) * 100)}%
         </span>
-      </div>);
+      </div>
+    );
   }
 }
 
@@ -120,12 +153,8 @@ class QuizQuestionDisplay extends React.Component {
     super(props);
   }
 
-  handleClick(e) {
-    console.log(this);
-    console.log(e);
-  }
-
   render() {
+    const self = this;
     return (
       <span className={"quiz-question-display"}>
         <QuizQuestion
@@ -139,7 +168,7 @@ class QuizQuestionDisplay extends React.Component {
                 <QuizAnswerChoice
                   choice={answer.choice}
                   aid={answer.aid}
-                  onClick={this.handleClick} /* todo - fix this later */
+                  onClick={() => self.props.setAnswer.call(self, self.props.qid, answer.aid)}
                 />
               );
             }
@@ -148,6 +177,14 @@ class QuizQuestionDisplay extends React.Component {
       </span>
     );
   }
+}
+
+function QuizQuestionDisplayCompleted(props) {
+  return (
+    <span className={"quiz-question-display"}>
+      You answered all {props.total} questions in this quiz!
+    </span>
+  );
 }
 
 class QuizQuestion extends React.Component {
@@ -170,6 +207,10 @@ class QuizQuestionQSymbol extends React.Component {
 
 class QuizAnswerChoice extends React.Component {
   render() {
-    return <span className={"quiz-answer-choice"}>{this.props.choice}</span>;
+    return (
+      <span
+        className={"quiz-answer-choice"}
+        onClick={this.props.onClick}>{this.props.choice}</span>
+    );
   }
 }

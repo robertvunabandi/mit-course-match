@@ -5,6 +5,7 @@
     margin: 0 auto; // center the quiz
     .quiz-state {
       border: 1px solid black;
+      padding: 0.5rem;
       .quiz-progress-bar {
         border: 1px solid black;
         border-radius: 100rem;
@@ -12,6 +13,8 @@
         span {
           border-radius: 100rem;
           background-color: red;
+          display: inline-block;
+          transition: all 500ms;
         }
       }
     }

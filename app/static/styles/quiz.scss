@@ -28,8 +28,23 @@
       .quiz-choices {
         display: block;
         .quiz-answer-choice {
-
+          padding: 0.5rem;
         }
+        .quiz-answer-choice-chosen {
+          span {
+            background-color: aquamarine;
+          }
+        }
+      }
+    }
+    .quiz-navigation {
+      display: block;
+      padding: 0.5rem;
+      .quiz-button {
+        display: block;
+      }
+      .quiz-button:hover {
+        background-color: aqua;
       }
     }
   }

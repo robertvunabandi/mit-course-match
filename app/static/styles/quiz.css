@@ -19,6 +19,17 @@
     font-weight: 900; }
   #content .quiz .quiz-question-display .quiz-choices {
     display: block; }
+    #content .quiz .quiz-question-display .quiz-choices .quiz-answer-choice {
+      padding: 0.5rem; }
+    #content .quiz .quiz-question-display .quiz-choices .quiz-answer-choice-chosen span {
+      background-color: aquamarine; }
+  #content .quiz .quiz-navigation {
+    display: block;
+    padding: 0.5rem; }
+    #content .quiz .quiz-navigation .quiz-button {
+      display: block; }
+    #content .quiz .quiz-navigation .quiz-button:hover {
+      background-color: aqua; }
 
 @media screen and (max-width: 576px) {
   #content .quiz {

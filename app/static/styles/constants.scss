@@ -10,3 +10,11 @@ $screen-md: 768px;
 $screen-lg: 992px;
 $screen-xl: 1200px;
 $screen-xxl: 1536px;
+
+.no-select {
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}

@@ -41,6 +41,15 @@ class Quiz extends React.Component {
     };
   }
 
+  componentWillMount() {
+    window.addEventListener("keydown", this.handleKeyDownEvent.bind(this));
+  }
+
+  handleKeyDownEvent(e) {
+    const { altKey, code, ctrlKey, key, keyCode, metaKey, shiftKey } = e;
+    console.log({ altKey, code, ctrlKey, key, keyCode, metaKey, shiftKey });
+  }
+
   getAnsweredQuestionsCount(answers) {
     let count = 0;
     this.state.questions.forEach(function (question) {

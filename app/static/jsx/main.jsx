@@ -45,6 +45,15 @@ function RCPaddedLineSeparator() {
   );
 }
 
+function RCEqualWidthComponent(props) {
+  const width = (100 / props.components.length) + "%";
+  return (
+    <span className={"rc-equal-width-component"}>
+      {props.components.map((component) => <span style={{width}}>{component}</span>)}
+    </span>);
+
+}
+
 /**
  * the main function call. this gets called at the start of every
  * page in this app.

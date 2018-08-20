@@ -43,4 +43,9 @@ body {
   min-height: 1px;
   background-color: black; }
 
+.rc-equal-width-component {
+  display: block; }
+  .rc-equal-width-component span {
+    display: inline-block; }
+
 /*# sourceMappingURL=main.css.map */

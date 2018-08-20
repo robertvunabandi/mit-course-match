@@ -13,6 +13,7 @@
  * */
 /* global React, ReactDOM, APP, UTIL, API */
 /* global RCSeparator, RCLineSeparator, RCPaddedLineSeparator */
+/* global RCEqualWidthComponent */
 
 const QuizConfig = {
   minQuestionToAnswer: 1,
@@ -256,8 +257,10 @@ function QuizQuestionDisplayCompleted(props) {
 function QuizQuestionNavigation(props) {
   return (
     <span className={"quiz-navigation"}>
-      <QuizButton onClick={props.previous} text={"Previous"}/>
-      <QuizButton onClick={props.next} text={"Next"}/>
+      <RCEqualWidthComponent components={[
+        <QuizButton onClick={props.previous} text={"Previous"}/>,
+        <QuizButton onClick={props.next} text={"Next"}/>
+      ]}/>
     </span>
   );
 }

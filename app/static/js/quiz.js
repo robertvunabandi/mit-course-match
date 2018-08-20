@@ -13,6 +13,7 @@
  * */
 /* global React, ReactDOM, APP, UTIL, API */
 /* global RCSeparator, RCLineSeparator, RCPaddedLineSeparator */
+/* global RCEqualWidthComponent */
 
 const QuizConfig = {
   minQuestionToAnswer: 1
@@ -268,8 +269,7 @@ function QuizQuestionNavigation(props) {
   return React.createElement(
     "span",
     { className: "quiz-navigation" },
-    React.createElement(QuizButton, { onClick: props.previous, text: "Previous" }),
-    React.createElement(QuizButton, { onClick: props.next, text: "Next" })
+    React.createElement(RCEqualWidthComponent, { components: [React.createElement(QuizButton, { onClick: props.previous, text: "Previous" }), React.createElement(QuizButton, { onClick: props.next, text: "Next" })] })
   );
 }
 

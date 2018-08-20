@@ -27,7 +27,8 @@
     display: block;
     padding: 0.5rem; }
     #content .quiz .quiz-navigation .quiz-button {
-      display: block; }
+      display: block;
+      text-align: center; }
     #content .quiz .quiz-navigation .quiz-button:hover {
       background-color: aqua; }
 

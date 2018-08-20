@@ -1,6 +1,7 @@
-from flask import render_template, request, json
+from flask import render_template, request, json, send_from_directory
 from app import app
 import app.db.database as database
+import os
 
 
 @app.route("/")
@@ -34,7 +35,16 @@ def questions():
 	return json.dumps(json_data)
 
 
+@app.route("/favicon.ico")
+def favicon():
+	return send_from_directory(
+		os.path.join(app.root_path, "static"),
+		"favicon.ico",
+		mimetype="image/vnd.microsoft.icon"
+	)
+
+
 @app.errorhandler(404)
 def not_found(error):
 	print(error)
-	return render_template("error.html"), 404
+	return render_template("error.html", error=error), 404

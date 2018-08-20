@@ -1,4 +1,17 @@
 {%  extends "base.html" %}
 {% block title %}Error{% endblock %}
-{% block styles %}{% endblock %}
+{% block styles %}
+    <link
+            rel="stylesheet"
+            type="text/css"
+            href="{{ url_for("static", filename="styles/error.css") }}">
+{% endblock %}
 {% block scripts %}{% endblock %}
+{% block error_content %}
+    <div id="error-content">
+        {# TODO - move all to using react and putting content int #content as it's supposed to be! #}
+        <span class="error">
+            {{ error }}
+        </span>
+    </div>
+{% endblock %}

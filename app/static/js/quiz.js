@@ -38,7 +38,6 @@ class Quiz extends React.Component {
       answers: {}
     };
     props.questions.forEach(function (question) {
-      question.answer_aid = null;
       self.state.questions.push(question);
     });
   }

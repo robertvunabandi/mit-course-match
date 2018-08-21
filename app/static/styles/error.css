@@ -7,9 +7,9 @@
   -o-user-select: none;
   user-select: none; }
 
-#error-content {
+#content {
   padding: 1rem; }
-  #error-content .error {
+  #content .error {
     display: block;
     border-left: 10px solid red;
     background-color: rgba(255, 0, 0, 0.25);

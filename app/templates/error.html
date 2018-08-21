@@ -6,12 +6,8 @@
             type="text/css"
             href="{{ url_for("static", filename="styles/error.css") }}">
 {% endblock %}
-{% block scripts %}{% endblock %}
-{% block error_content %}
-    <div id="error-content">
-        {# TODO - move all to using react and putting content int #content as it's supposed to be! #}
-        <span class="error">
-            {{ error }}
-        </span>
-    </div>
+{% block scripts %}
+    {# pass in the error in the ERROR variable as a string. #}
+    <script>const ERROR = "{{ error }}";</script>
+    <script defer src="{{ url_for("static", filename="js/error.js") }}"></script>
 {% endblock %}

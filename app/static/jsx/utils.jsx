@@ -1,7 +1,8 @@
+"use strict";
 /**
  * utility functions
  * */
-"use strict";
+
 
 const UTIL = {};
 UTIL.invariant = function (bool, msg) {

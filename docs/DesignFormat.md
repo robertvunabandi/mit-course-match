@@ -1,3 +1,5 @@
+> THIS IS **DEPRECATED**. The content of this doc is not accurate. August 20, 2018. 
+
 # Design Format
 
 These are the design choices that will be implemented in this format:

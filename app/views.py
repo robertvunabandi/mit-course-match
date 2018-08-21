@@ -60,4 +60,7 @@ def courses():
 	:return json of the format
 		List[Dict["course_number": String, "course": String]]
 	"""
-	return json.dumps([{"course_number": cn, "course": course} for cn, course in mit_courses])
+	return json.dumps([{
+		"course_number": cn,
+		"course": course
+	} for cn, course in mit_courses])

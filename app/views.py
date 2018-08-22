@@ -31,6 +31,16 @@ def not_found(error):
 
 
 """
+DATA POST REQUESTS
+"""
+
+
+@app.route("/response", methods=["POST"])
+def store_response():
+	raise NotImplementedError
+
+
+"""
 DATA GET REQUESTS WITH JSON RESPONSE
 """
 

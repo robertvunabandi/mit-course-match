@@ -2,10 +2,10 @@ import config
 import unittest
 import mysql.connector
 from typing import Callable
-from app.db.sql_constants import TBL, TBLCol
+from app.db.sql_constants import TBL, TBLCol, QuestionTypes, QuestionAnswerTypes
 import app.db.database as database
 from app.db.mit_courses import mit_courses
-from app.utils.db_utils import convert_int_list_to_vector_text
+from app.utils.db_utils import convert_int_list_to_vector_text, quote
 
 
 def setup():
@@ -140,9 +140,17 @@ class TestDatabase(unittest.TestCase):
 			print(exception)
 			self.fail("initialization raised an error")
 		# store some dummy data
-		database.cursor.execute("""
-			INSERT INTO %s (%s) VALUES ('Coffee')
-		""" % (TBL.Questions, TBLCol.question))
+		query_data = (
+			TBL.Questions,
+			TBLCol.question,
+			TBLCol.question_type,
+			TBLCol.question_answer_type,
+			quote(QuestionTypes.Quiz),
+			quote(QuestionAnswerTypes.MultipleChoice),
+		)
+		database.cursor.execute(
+			"INSERT INTO %s (%s, %s, %s) VALUES ('Coffee', %s, %s)" % query_data
+		)
 		database.cnx.commit()
 		database.cursor.execute("""
 			INSERT INTO %s (%s, %s, %s) VALUES (1, 'Yo', '1,4')
@@ -270,7 +278,7 @@ class TestDatabase(unittest.TestCase):
 		question = "who are you"
 		choices = \
 			[("no one", "0,0,1"), ("someone", "0,1,0"), ("errone", "1,0,0")]
-		database.store_question(question, choices)
+		database.store_question(question, QuestionTypes.Quiz, QuestionAnswerTypes.MultipleChoice, choices)
 		# List[Tuple[QID, SQuestion, List[Tuple[AID, SChoice, List[int]]]]
 		questions = database.load_questions()
 		qid_db, q_db, answers = questions[0]

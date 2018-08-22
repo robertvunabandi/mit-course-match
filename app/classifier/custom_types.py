@@ -1,12 +1,13 @@
 import numpy as np
 from typing import Any
+from app.db.sql_constants import QuestionTypes, QuestionAnswerTypes
 
 
 class Vector(np.ndarray):
 	@staticmethod
 	def assert_is_np_array(
-			vec: np.ndarray,
-			err_msg: str = "this is not a numpy array") -> None:
+		vec: np.ndarray,
+		err_msg: str = "this is not a numpy array") -> None:
 		assert isinstance(vec, np.ndarray), err_msg
 
 	@staticmethod
@@ -99,6 +100,44 @@ class SMSName(SpecialString):
 class SQuestion(SpecialString):
 	def __repr__(self):
 		return "Question:" + super(SQuestion, self).__repr__()
+
+
+class SQuestionType(SpecialString):
+	def __repr__(self):
+		return "QuestionType:" + super(SQuestionType, self).__repr__()
+
+	def __new__(cls, *args, **kwargs):
+		obj = super().__new__(cls, str(args[0]))
+		SQuestionType.assert_is_valid_question_type(obj)
+		return obj
+
+	@staticmethod
+	def is_question_type(s: Any) -> bool:
+		return QuestionTypes.is_valid(s)
+
+	@staticmethod
+	def assert_is_valid_question_type(s: Any) -> None:
+		assert QuestionTypes.is_valid(s), \
+			"argument (%s) must be a question type" % str(s)
+
+
+class SQuestionAnswerType(SpecialString):
+	def __repr__(self):
+		return "QuestionAnswerType:" + super(SQuestionAnswerType, self).__repr__()
+
+	def __new__(cls, *args, **kwargs):
+		obj = super().__new__(cls, str(args[0]))
+		SQuestionAnswerType.assert_is_valid_question_answer_type(obj)
+		return obj
+
+	@staticmethod
+	def is_question_answer_type(s: Any) -> bool:
+		return QuestionAnswerTypes.is_valid(s)
+
+	@staticmethod
+	def assert_is_valid_question_answer_type(s: Any) -> None:
+		assert QuestionAnswerTypes.is_valid(s), \
+			"argument (%s) must be a question answer type" % str(s)
 
 
 class SCourse(SpecialString):

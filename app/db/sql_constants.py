@@ -1,3 +1,5 @@
+from typing import Set
+
 class TBL:
 	"""
 	A table class to store all table variables
@@ -73,7 +75,19 @@ class ResponseMappings(TableColumns):
 		return TBLCol.response_id, TBLCol.question_id, TBLCol.answer_id
 
 
-class QuestionTypes:
+class DBType:
+	@staticmethod
+	def get_types() -> Set[str]:
+		return NotImplemented
+
+	@classmethod
+	def is_valid(cls, s: str) -> bool:
+		if not isinstance(s, str):
+			return False
+		return s in cls.get_types()
+
+
+class QuestionTypes(DBType):
 	"""
 	in this model, we have different types of questions to answer to
 	different needs. this class helps shed light into those types.
@@ -100,8 +114,16 @@ class QuestionTypes:
 	# USED WHEN PREDICTING
 	Quiz = "quiz"
 
+	@staticmethod
+	def get_types() -> Set[str]:
+		return {
+			QuestionTypes.Identification,
+			QuestionTypes.Regularizing,
+			QuestionTypes.Quiz,
+		}
 
-class QuestionAnswerTypes:
+
+class QuestionAnswerTypes(DBType):
 	"""
 	different types of answers can be used for various questions.
 	this class helps with setting the correct type of question.
@@ -119,3 +141,11 @@ class QuestionAnswerTypes:
 	# it could be possible that the answer to some questions is a
 	# floating number. this type is for those questions.
 	FloatInput = "FloatInput"
+
+	@staticmethod
+	def get_types() -> Set[str]:
+		return {
+			QuestionAnswerTypes.MultipleChoice,
+			QuestionAnswerTypes.IntegerInput,
+			QuestionAnswerTypes.FloatInput,
+		}

@@ -41,9 +41,21 @@ class _DBInitializer:
 
 	@staticmethod
 	def create_questions_table(cursor: CursorBase) -> None:
-		cursor.execute(
-			"CREATE TABLE IF NOT EXISTS %s ( %s SERIAL, %s TEXT NOT NULL)" %
-			(TBL.Questions, TBLCol.question_id, TBLCol.question)
+		questions_query_data = (
+			TBL.Questions,
+			TBLCol.question_id,
+			TBLCol.question,
+			TBLCol.question_type,
+			TBLCol.question_answer_type,
+		)
+		cursor.execute("""
+			CREATE TABLE IF NOT EXISTS %s ( 
+				%s SERIAL, 
+				%s TEXT NOT NULL,
+				%s TINYTEXT NOT NULL,
+				%s TINYTEXT NOT NULL
+			)
+		""" % questions_query_data
 		)
 
 	@staticmethod

@@ -8,6 +8,8 @@ from app.db.sql import cursor, cnx
 from app.db.sql_constants import TBL, TBLCol
 from typing import List, Callable, Tuple, Dict, Union
 from app.classifier.custom_types import (
+	SQuestionType,
+	SQuestionAnswerType,
 	SChoice,
 	SVector,
 	SQuestion,
@@ -57,12 +59,22 @@ class _DB:
 	@_commit
 	def store_question(
 		question: str,
+		q_type: SQuestionType,
+		qa_type: SQuestionAnswerType,
 		choices: List[Tuple[str, str]]
 	) -> Tuple[QID, SQuestion, List[Tuple[SChoice, SVector]]]:
 		if _DB.question_exists_in_db(question):
 			raise ValueError("this question already exists in the database")
-		data = (TBL.Questions, TBLCol.question, question)
-		cursor.execute("INSERT INTO %s (%s) VALUES ('%s')" % data)
+		data = (
+			TBL.Questions,
+			TBLCol.question,
+			TBLCol.question_type,
+			TBLCol.question_answer_type,
+			quote(question),
+			quote(q_type),
+			quote(qa_type),
+		)
+		cursor.execute("INSERT INTO %s (%s, %s, %s) VALUES (%s, %s, %s)" % data)
 		question_id = _DB.question_id(question)
 		data = (
 			TBL.AnswerChoices,

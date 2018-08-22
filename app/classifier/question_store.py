@@ -1,6 +1,14 @@
 from app.db import database
 from typing import List, Tuple
-from app.classifier.custom_types import SQuestion, SChoice, SVector, QID
+from app.db.sql_constants import QuestionTypes, QuestionAnswerTypes
+from app.classifier.custom_types import (
+	SQuestion,
+	SQuestionType,
+	SQuestionAnswerType,
+	SChoice,
+	SVector,
+	QID,
+)
 
 
 class QuestionStore:
@@ -8,12 +16,15 @@ class QuestionStore:
 	Store question and its answers and vector mapping one question
 	at a time.
 	"""
+
 	@staticmethod
 	def store_question(
-			question: str,
-			answer_choices: List[Tuple[str, List[int]]]
+		question: str,
+		answer_choices: List[Tuple[str, List[int]]],
+		q_type: SQuestionType = QuestionTypes.Quiz,
+		qa_type: SQuestionAnswerType = QuestionAnswerTypes.MultipleChoice,
 	) -> Tuple[QID, SQuestion, List[Tuple[SChoice, SVector]]]:
-		QuestionStore.assert_valid_inputs(question, answer_choices)
+		QuestionStore.assert_valid_inputs(question, answer_choices, q_type, qa_type)
 		return database.store_question(question, [
 			(choice, ",".join([str(i) for i in vector]))
 			for choice, vector in answer_choices
@@ -21,12 +32,17 @@ class QuestionStore:
 
 	@staticmethod
 	def assert_valid_inputs(
-			question: str,
-			answer_choices: List[Tuple[str, List[int]]]
-	):
+		question: str,
+		answer_choices: List[Tuple[str, List[int]]],
+		q_type: SQuestionType,
+		qa_type: SQuestionAnswerType,
+	) -> None:
 		assert type(question) == str, "question must be a string"
+		SQuestionType.assert_is_valid_question_type(q_type)
+		SQuestionAnswerType.assert_is_valid_question_answer_type(qa_type)
 		assert type(answer_choices) == list, "answer_choice must be a list"
-		assert len(answer_choices) > 1, "need at least 2 response_choices per question"
+		assert len(answer_choices) > 1, \
+			"need at least 2 response_choices per question"
 		vec_length = None
 		for tup in answer_choices:
 			assert len(tup) == 2, "each item in answer_choices must be a tuple"

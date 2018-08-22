@@ -14,5 +14,13 @@
     border-left: 10px solid red;
     background-color: rgba(255, 0, 0, 0.25);
     padding: 0.75rem 0.5rem; }
+    #content .error .error-status {
+      padding-top: 1rem;
+      display: block;
+      font-weight: 900; }
+      #content .error .error-status .error-status-code {
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+        background-color: rgba(255, 255, 255, 0.5); }
 
 /*# sourceMappingURL=error.css.map */

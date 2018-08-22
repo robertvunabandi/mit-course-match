@@ -24,12 +24,6 @@ def favicon():
 	)
 
 
-@app.errorhandler(404)
-def not_found(error):
-	print(error)
-	return render_template("error.html", error=error), 404
-
-
 """
 DATA POST REQUESTS
 """
@@ -74,3 +68,23 @@ def courses():
 		"course_number": cn,
 		"course": course
 	} for cn, course in mit_courses])
+
+
+"""
+ERROR HANDLING
+"""
+
+
+@app.errorhandler(404)
+def not_found(error):
+	return render_template("error.html", error=error, status=404), 404
+
+
+@app.errorhandler(405)
+def not_found(error):
+	return render_template("error.html", error=error, status=405), 405
+
+
+@app.errorhandler(500)
+def not_found(error):
+	return render_template("error.html", error=error, status=500), 500

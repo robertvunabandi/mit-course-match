@@ -8,6 +8,6 @@
 {% endblock %}
 {% block scripts %}
     {# pass in the error in the ERROR variable as a string. #}
-    <script>const ERROR = "{{ error }}";</script>
+    <script>const ERROR = "{{ error }}"; const STATUS = "{{ status }}";</script>
     <script defer src="{{ url_for("static", filename="js/error.js") }}"></script>
 {% endblock %}

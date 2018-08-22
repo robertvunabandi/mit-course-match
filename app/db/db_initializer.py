@@ -1,5 +1,5 @@
 from app.db.sql_constants import TBL, TBLCol
-from app.utils.string_util import quote
+from app.utils.db_utils import quote
 from app.db.mit_courses import mit_courses
 import mysql.connector.errors
 from mysql.connector.cursor import CursorBase

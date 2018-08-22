@@ -42,11 +42,3 @@ def clean_string(s: str) -> str:
 	if s[-1] == ' ':
 		return clean_string(s[:-1])
 	return s
-
-
-def quote(s: str, use_single=False) -> str:
-	""" puts quotation marks around the string """
-	q = "\""
-	if use_single:
-		q = "'"
-	return q + s + q

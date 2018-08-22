@@ -30,3 +30,11 @@ def convert_vector_text_to_int_list(s_vector: Union[SVector, str]) -> List[int]:
 
 def convert_int_list_to_vector_text(vector: List[int]) -> SVector:
 	return SVector(",".join([str(i) for i in vector]))
+
+
+def quote(s: str, use_single=False) -> str:
+	""" puts quotation marks around the string """
+	q = "\""
+	if use_single:
+		q = "'"
+	return q + s + q

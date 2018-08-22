@@ -2,6 +2,7 @@ from app.utils import generator_util
 from app.utils.db_utils import (
 	convert_to_query_values,
 	convert_vector_text_to_int_list,
+	quote,
 )
 from app.db.sql import cursor, cnx
 from app.db.sql_constants import TBL, TBLCol
@@ -17,7 +18,6 @@ from app.classifier.custom_types import (
 	CID,
 	RID,
 )
-from app.utils.string_util import quote
 import app.db.db_initializer as db_initializer
 
 

@@ -51,30 +51,6 @@ After making multiple analysis, we can publish somewhere somehow. That's really 
 
 Another actionable here is to display the response with more details about why a given major ranks where it ranks for a given user. 
 
-# Current Dilemmas
-
-## How do we maximize the collection of training data?
- 
-The people who will answer this survey, who ideally are from MIT, will fit into two categories: those who have declared their major and those who haven't. This project can potentially help those who haven't declared their majors. However, in order for it to be useful, we need responses from those who have.
-
-There are two solutions:
-- Collect data from those who have declared major
-- Collect data from those who haven't declared later when they declare
-
-The first solution is pretty straightforward and briefly discussed below.
-
-### Collect From Declared Majors
-
-This is simply having the declared person answer the question and include their major before submitting. 
-
-TODO - COMPLETE SECTION
-
-### Collect From Undeclared When Declared
-
-How do we convert unlabelled response to a labelled response?
-
-TODO - COMPLETE SECTION
-
 # Design Choice
 
 See the design format doc.

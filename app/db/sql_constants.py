@@ -15,6 +15,8 @@ class TBLCol:
 	"""
 	question_id = "qid"
 	question = "question"
+	question_type = "question_type"
+	question_answer_type = "answer_type"
 	answer_id = "aid"
 	choice = "choice"
 	vector = "vector"
@@ -33,7 +35,12 @@ class TableColumns:
 
 class Questions(TableColumns):
 	def get_columns(self):
-		return TBLCol.question_id, TBLCol.question
+		return (
+			TBLCol.question_id,
+			TBLCol.question,
+			TBLCol.question_type,
+			TBLCol.question_answer_type,
+		)
 
 
 class AnswerChoices(TableColumns):
@@ -64,3 +71,51 @@ class Responses(TableColumns):
 class ResponseMappings(TableColumns):
 	def get_columns(self):
 		return TBLCol.response_id, TBLCol.question_id, TBLCol.answer_id
+
+
+class QuestionTypes:
+	"""
+	in this model, we have different types of questions to answer to
+	different needs. this class helps shed light into those types.
+	"""
+
+	# this type of question serves to identify a given user's place
+	# in society. the solutions to these questions are used to match
+	# a set of answer with a type of person. when the analyzing phase
+	# starts, this will be used to figure draw some conclusions.
+	# NOT USED WHEN PREDICTING
+	Identification = "identification"
+
+	# the regularizing questions is to help the ML model solve
+	# unavoidable types of people. for instance, people of a given
+	# age will tend to answer in a specific way. these questions
+	# will help the model making that difference. they are similar
+	# to identification questions except they group people into
+	# unavoidable types of people.
+	# USED WHEN PREDICTING
+	Regularizing = "regularizing"
+
+	# these questions are the ones asked in the asked in the quiz
+	# portion. see question criteria for more details on these.
+	# USED WHEN PREDICTING
+	Quiz = "quiz"
+
+
+class QuestionAnswerTypes:
+	"""
+	different types of answers can be used for various questions.
+	this class helps with setting the correct type of question.
+	"""
+
+	# most questions will be multiple choice. their answers thus will
+	# be represented with specific vectors using the vector column
+	# in the AnswerChoices table
+	MultipleChoice = "MultipleChoice"
+
+	# some questions will ask for an input value that can only be an
+	# integer. this type is for those questions.
+	IntegerInput = "IntegerInput"
+
+	# it could be possible that the answer to some questions is a
+	# floating number. this type is for those questions.
+	FloatInput = "FloatInput"

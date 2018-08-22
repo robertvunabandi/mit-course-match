@@ -132,15 +132,15 @@ class QuestionAnswerTypes(DBType):
 	# most questions will be multiple choice. their answers thus will
 	# be represented with specific vectors using the vector column
 	# in the AnswerChoices table
-	MultipleChoice = "MultipleChoice"
+	MultipleChoice = "multiple_choice"
 
 	# some questions will ask for an input value that can only be an
 	# integer. this type is for those questions.
-	IntegerInput = "IntegerInput"
+	IntegerInput = "integer_input"
 
 	# it could be possible that the answer to some questions is a
 	# floating number. this type is for those questions.
-	FloatInput = "FloatInput"
+	FloatInput = "float_input"
 
 	@staticmethod
 	def get_types() -> Set[str]:

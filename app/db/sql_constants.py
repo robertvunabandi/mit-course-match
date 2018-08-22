@@ -1,5 +1,6 @@
 from typing import Set
 
+
 class TBL:
 	"""
 	A table class to store all table variables

@@ -87,16 +87,6 @@ they are just strings.
 """
 
 
-class SQSName(SpecialString):
-	def __repr__(self):
-		return "QuestionSetName:" + super(SQSName, self).__repr__()
-
-
-class SMSName(SpecialString):
-	def __repr__(self):
-		return "MappingSetName:" + super(SMSName, self).__repr__()
-
-
 class SQuestion(SpecialString):
 	def __repr__(self):
 		return "Question:" + super(SQuestion, self).__repr__()
@@ -188,11 +178,6 @@ class AID(IntID):
 		return "A" + super(AID, self).__repr__()
 
 
-class QSID(IntID):
-	def __repr__(self):
-		return "QS" + super(QSID, self).__repr__()
-
-
 class RID(IntID):
 	def __repr__(self):
 		return "R" + super(RID, self).__repr__()
@@ -201,8 +186,3 @@ class RID(IntID):
 class CID(IntID):
 	def __repr__(self):
 		return "C" + super(CID, self).__repr__()
-
-
-class MSID(IntID):
-	def __repr__(self):
-		return "MS" + super(MSID, self).__repr__()

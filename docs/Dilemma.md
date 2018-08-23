@@ -22,7 +22,7 @@ These people will go through the normal flow. Once they reach the end and are as
 
 This information, such as email, can be used to contact them later on to ask whether they have declared and what major they chose.
 
-The problem with this is that the information about the user can be matched with a survey response, which is bad because a malicious person can snoop on other people's responses. 
+The problem with this is that the information about the user can be matched with a survey response, which is bad because a malicious person can snoop on other people's responses.
 
 # Solved Dilemmas
 
@@ -33,3 +33,15 @@ We will use MITOpenID connect and have people log in through it.
 The way this this will work is that after they are done completing their survey, we will prompt them to log in to confirm that they are MIT. Once they log in, we have a way to match one set of answer to one individual. 
 
 We will hash the receivable information from MIT OpenID Connect so that we're not able to match a given user's response with a specific user. 
+
+## Should it be mandatory to answer all questions?
+
+### Yes, here's why
+
+If people know that they don't have to answer all the questions, then it can potentially make them feel more in control and be more willing to take the quiz.
+
+If we add more questions, then all the answers from before will miss that questions. So, it'd make sense to put the answer to that question with a default value just as it would be with questions that are unanswered. Basically, this gives the opportunity to add more questions safely, which is better for our needs. Some questions will probably be trash. 
+
+### No, here's why
+
+ We need all answered to be as real as possible. Letting people not answer questions means that those questions will be answered with a default response. This is a missed opportunity at classifying them better. 

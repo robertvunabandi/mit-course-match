@@ -1,6 +1,5 @@
 from app.db import database
 from typing import List, Tuple
-from app.db.sql_constants import QuestionTypes, QuestionAnswerTypes
 from app.classifier.custom_types import (
 	SQuestion,
 	SQuestionType,
@@ -21,8 +20,8 @@ class QuestionStore:
 	def store_question(
 		question: str,
 		answer_choices: List[Tuple[str, List[int]]],
-		q_type: SQuestionType = QuestionTypes.Quiz,
-		qa_type: SQuestionAnswerType = QuestionAnswerTypes.MultipleChoice,
+		q_type: SQuestionType = SQuestionType.type.quiz,
+		qa_type: SQuestionAnswerType = SQuestionAnswerType.type.multiple_choice,
 	) -> Tuple[QID, SQuestion, List[Tuple[SChoice, SVector]]]:
 		QuestionStore.assert_valid_inputs(question, answer_choices, q_type, qa_type)
 		return database.store_question(question, [

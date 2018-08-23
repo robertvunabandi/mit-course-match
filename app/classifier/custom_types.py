@@ -93,6 +93,11 @@ class SQuestion(SpecialString):
 
 
 class SQuestionType(SpecialString):
+	class type:
+		quiz = QuestionTypes.Quiz
+		identification = QuestionTypes.Identification
+		regularization = QuestionTypes.Regularizing
+
 	def __repr__(self):
 		return "QuestionType:" + super(SQuestionType, self).__repr__()
 
@@ -112,6 +117,11 @@ class SQuestionType(SpecialString):
 
 
 class SQuestionAnswerType(SpecialString):
+	class type:
+		multiple_choice = QuestionAnswerTypes.MultipleChoice
+		integer_input = QuestionAnswerTypes.IntegerInput
+		float_input = QuestionAnswerTypes.FloatInput
+
 	def __repr__(self):
 		return "QuestionAnswerType:" + super(SQuestionAnswerType, self).__repr__()
 

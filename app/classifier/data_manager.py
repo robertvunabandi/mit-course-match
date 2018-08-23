@@ -39,6 +39,7 @@ class DataManager:
 		self,
 		course: CID or SCourse or SCourseNumber = None,
 	) -> RID:
+		self.assert_all_questions_answered()
 		return database.store_response(
 			self.response_choices,
 			self.cm.get_cn(course),

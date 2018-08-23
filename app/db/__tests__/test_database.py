@@ -2,7 +2,8 @@ import config
 import unittest
 import mysql.connector
 from typing import Callable
-from app.db.sql_constants import TBL, TBLCol, QuestionTypes, QuestionAnswerTypes
+from app.db.sql_constants import TBL, TBLCol
+from app.classifier.custom_types import SQuestionType, SQuestionAnswerType
 import app.db.database as database
 from app.db.mit_courses import mit_courses
 from app.utils.db_utils import convert_int_list_to_vector_text, quote
@@ -145,8 +146,8 @@ class TestDatabase(unittest.TestCase):
 			TBLCol.question,
 			TBLCol.question_type,
 			TBLCol.question_answer_type,
-			quote(QuestionTypes.Quiz),
-			quote(QuestionAnswerTypes.MultipleChoice),
+			quote(SQuestionType.type.quiz),
+			quote(SQuestionAnswerType.type.multiple_choice),
 		)
 		database.cursor.execute(
 			"INSERT INTO %s (%s, %s, %s) VALUES ('Coffee', %s, %s)" % query_data
@@ -278,7 +279,12 @@ class TestDatabase(unittest.TestCase):
 		question = "who are you"
 		choices = \
 			[("no one", "0,0,1"), ("someone", "0,1,0"), ("errone", "1,0,0")]
-		database.store_question(question, QuestionTypes.Quiz, QuestionAnswerTypes.MultipleChoice, choices)
+		database.store_question(
+			question,
+			SQuestionType.type.quiz,
+			SQuestionAnswerType.type.multiple_choice,
+			choices,
+		)
 		# List[Tuple[QID, SQuestion, List[Tuple[AID, SChoice, List[int]]]]
 		questions = database.load_questions()
 		qid_db, q_db, answers = questions[0]

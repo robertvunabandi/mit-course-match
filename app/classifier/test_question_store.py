@@ -1,10 +1,10 @@
 import unittest
 import app.classifier.question_store as qs
-from app.db.sql_constants import QuestionTypes, QuestionAnswerTypes
+from app.classifier.custom_types import SQuestionType, SQuestionAnswerType
 
 
-q_type = QuestionTypes.Quiz
-qa_type = QuestionAnswerTypes.MultipleChoice
+q_type = SQuestionType.type.quiz
+qa_type = SQuestionAnswerType.type.multiple_choice
 
 
 class TestQuestionStore(unittest.TestCase):

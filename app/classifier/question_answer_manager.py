@@ -80,3 +80,6 @@ class QuestionAnswerManager:
 	def question_ids(self) -> Iterable[QID]:
 		for qid in self.qid_set:
 			yield qid
+
+	def question_count(self) -> int:
+		return len(self.qid_set)

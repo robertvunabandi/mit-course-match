@@ -39,21 +39,19 @@ class DataManager:
 		self,
 		course: CID or SCourse or SCourseNumber = None,
 	) -> RID:
-		self.assert_all_questions_answered()
 		return database.store_response(
 			self.response_choices,
 			self.cm.get_cn(course),
 		)
 
-	def assert_all_questions_answered(self):
-		not_answered = [
+	def get_answered_questions_count(self) -> int:
+		return len([
 			qid for qid in self.question_ids()
-			if qid not in self.response_choices
-		]
-		assert len(not_answered) == 0, (
-			"questions with question ids [%s] aren't answered "
-			"yet" % ",".join([str(qid) for qid in not_answered])
-		)
+			if qid in self.response_choices
+		])
+
+	def are_all_questions_answered(self) -> bool:
+		return self.get_answered_questions_count() == self.qam.question_count()
 
 	def refresh_response(self) -> None:
 		self.response_choices = {}

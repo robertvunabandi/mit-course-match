@@ -42,6 +42,8 @@ If people know that they don't have to answer all the questions, then it can pot
 
 If we add more questions, then all the answers from before will miss that questions. So, it'd make sense to put the answer to that question with a default value just as it would be with questions that are unanswered. Basically, this gives the opportunity to add more questions safely, which is better for our needs. Some questions will probably be trash. 
 
+Not forcing people to answer a specific number of questions allow us to give higher chances in raffles for those who answer more. 
+
 ### No, here's why
 
  We need all answered to be as real as possible. Letting people not answer questions means that those questions will be answered with a default response. This is a missed opportunity at classifying them better. 

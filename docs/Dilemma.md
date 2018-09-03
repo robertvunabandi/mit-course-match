@@ -1,5 +1,24 @@
 # Current Dilemmas
 
+## Maximizing training data collection through labelling of response: should we even do this?
+
+The answers to the questions may change after the person ends up declaring their major. 
+
+The person may have been influenced by the answers to their survey in declaring their major. Simply labelling the previous answers prevents us from knowing whether the survey had an influence at all. 
+
+## How to prevent non-MIT to answer this survey or MIT to answer multiple times? 
+
+**We will use MITOpenID connect and have people log in through it.** 
+
+*Can we make people use certificates? If so, that'd be a lot nicer.*
+
+The way this this will work is that after they are done completing their survey, we will prompt them to log in to confirm that they are MIT. Once they log in, we have a way to match one set of answer to one individual. 
+
+We will hash the receivable information from MIT OpenID Connect so that we're not able to match a given user's response with a specific user. 
+
+
+# Solved Dilemmas
+
 ## How do we maximize the collection of training data?
  
 The people who will answer this survey, who ideally are from MIT, will fit into two categories: those who have declared their major and those who haven't. This project can potentially help those who haven't declared their majors. However, in order for it to be useful, we need responses from those who have.
@@ -14,7 +33,15 @@ The first solution is pretty straightforward and briefly discussed below.
 
 This is simply having the declared person answer the question and include their major before submitting. This will be the first way of collecting data. Simply put, we will dormspam people who have declared their major to answer the questionnaire.
 
-There needs to be an incentive to answer. There will be multiple raffle prizes for those who participate.   
+There needs to be an incentive to answer. There will be multiple raffle prizes for those who participate.
+
+#### Decision
+
+**Collect every year or semester data.** 
+
+Now, this leads to the fact that it'd tremendously easier to do if attacking many schools instead of just MIT. There just will be a lot more data.   
+
+This is also going to be more expensive. There needs to be an incentive to answer the survey.  
 
 ### Collect From Undeclared When Declared
 
@@ -24,15 +51,14 @@ This information, such as email, can be used to contact them later on to ask whe
 
 The problem with this is that the information about the user can be matched with a survey response, which is bad because a malicious person can snoop on other people's responses.
 
-# Solved Dilemmas
+#### Decision
 
-## How to prevent non-MIT to answer this survey or MIT to answer multiple times? 
-
-We will use MITOpenID connect and have people log in through it. 
-
-The way this this will work is that after they are done completing their survey, we will prompt them to log in to confirm that they are MIT. Once they log in, we have a way to match one set of answer to one individual. 
-
-We will hash the receivable information from MIT OpenID Connect so that we're not able to match a given user's response with a specific user. 
+**We will just ask for email and set up a script to contact the person after a certain amount of time.**
+ 
+ Here's why:
+- Having people sign up just to answer a survey can lead to a high number of drop-off. That just doesn't make sense. 
+- The only reason we want people to sign up is to collect their information so that we can email them later to label their answer.
+- This will be easier. We can add in the option of not answering so that we can decide not to save that set of answers. 
 
 ## Should it be mandatory to answer all questions?
 

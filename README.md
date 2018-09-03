@@ -51,6 +51,10 @@ After making multiple analysis, we can publish somewhere somehow. That's really 
 
 Another actionable here is to display the response with more details about why a given major ranks where it ranks for a given user. 
 
+## Version 3
+
+Attempt to expand to other schools.
+
 # Design Choice
 
 See the design format doc.

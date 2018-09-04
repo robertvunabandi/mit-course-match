@@ -40,7 +40,7 @@
     // enforce a maximum depth of 4 per function
     "max-depth": [1, 4],
     // enforce a maximum of 15 statements per function
-    "max-statement": [1, {"max": 15, "ignoreTopLevelFunctions": true}],
+    "max-statements": [1, 15],
     // enforce a maximum of 50 lines per functions
     "max-lines-per-function": [1, 50],
     // enforce a max length of 100 for code and 70 for commments

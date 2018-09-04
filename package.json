@@ -1,6 +1,7 @@
 {
   "name": "mit-course-match",
   "version": "1.0.0",
+  "private": true,
   "description": "A web application that helps undecided students find what MIT course they \"match\" with the most.",
   "mainDone": "index.js",
   "scripts": {

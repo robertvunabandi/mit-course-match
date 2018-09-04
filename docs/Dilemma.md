@@ -1,23 +1,54 @@
 # Current Dilemmas
 
+--- None :O?
+ 
+# Solved Dilemmas
+
+## Should it be mandatory to answer all questions?
+
+### Yes, here's why
+
+If people know that they don't have to answer all the questions, then it can potentially make them feel more in control and be more willing to take the quiz.
+
+If we add more questions, then all the answers from before will miss that questions. So, it'd make sense to put the answer to that question with a default value just as it would be with questions that are unanswered. Basically, this gives the opportunity to add more questions safely, which is better for our needs. Some questions will probably be trash. 
+
+Not forcing people to answer a specific number of questions allow us to give higher chances in raffles for those who answer more. 
+
+### No, here's why
+
+ We need all answered to be as real as possible. Letting people not answer questions means that those questions will be answered with a default response. This is a missed opportunity at classifying them better. 
+ 
+---
+**We will have people answer a minimum of 85% of the questions.**
+
+Those who answer more will have a higher chance at the raffle.
+
 ## Maximizing training data collection through labelling of response: should we even do this?
+
+
 
 The answers to the questions may change after the person ends up declaring their major. 
 
-The person may have been influenced by the answers to their survey in declaring their major. Simply labelling the previous answers prevents us from knowing whether the survey had an influence at all. 
+The person may have been influenced by the answers to their survey in declaring their major. Simply labelling the previous answers prevents us from knowing whether the survey had an influence at all.
+
+---
+**We will not do this.**
+
+
+Of course, not doing this means we will lose a good portion of answers. However, even getting something to work is favorable in our case. This is blocking us from improving, so this decision is an unblocking one. In addition, it will make development faster because we would not have to implement this sketchy delayed email sending.
 
 ## How to prevent non-MIT to answer this survey or MIT to answer multiple times? 
-
-**We will use MITOpenID connect and have people log in through it.** 
-
-*Can we make people use certificates? If so, that'd be a lot nicer.*
 
 The way this this will work is that after they are done completing their survey, we will prompt them to log in to confirm that they are MIT. Once they log in, we have a way to match one set of answer to one individual. 
 
 We will hash the receivable information from MIT OpenID Connect so that we're not able to match a given user's response with a specific user. 
 
+---
+**We will use MITOpenID connect and have people log in through it.** 
 
-# Solved Dilemmas
+This will prevent people from answering twice.
+
+*Can we make people use certificates? If so, that'd be a lot nicer. If we can, then we should use this instead.*
 
 ## How do we maximize the collection of training data?
  
@@ -35,8 +66,7 @@ This is simply having the declared person answer the question and include their 
 
 There needs to be an incentive to answer. There will be multiple raffle prizes for those who participate.
 
-#### Decision
-
+---
 **Collect every year or semester data.** 
 
 Now, this leads to the fact that it'd tremendously easier to do if attacking many schools instead of just MIT. There just will be a lot more data.   
@@ -51,7 +81,12 @@ This information, such as email, can be used to contact them later on to ask whe
 
 The problem with this is that the information about the user can be matched with a survey response, which is bad because a malicious person can snoop on other people's responses.
 
-#### Decision
+
+---
+
+**UPDATE: We will not do this because it slows down development and is sketchy.**
+
+Now, we don't need to attach people's information to a set of answers. That'd make it easier. 
 
 **We will just ask for email and set up a script to contact the person after a certain amount of time.**
  
@@ -59,17 +94,3 @@ The problem with this is that the information about the user can be matched with
 - Having people sign up just to answer a survey can lead to a high number of drop-off. That just doesn't make sense. 
 - The only reason we want people to sign up is to collect their information so that we can email them later to label their answer.
 - This will be easier. We can add in the option of not answering so that we can decide not to save that set of answers. 
-
-## Should it be mandatory to answer all questions?
-
-### Yes, here's why
-
-If people know that they don't have to answer all the questions, then it can potentially make them feel more in control and be more willing to take the quiz.
-
-If we add more questions, then all the answers from before will miss that questions. So, it'd make sense to put the answer to that question with a default value just as it would be with questions that are unanswered. Basically, this gives the opportunity to add more questions safely, which is better for our needs. Some questions will probably be trash. 
-
-Not forcing people to answer a specific number of questions allow us to give higher chances in raffles for those who answer more. 
-
-### No, here's why
-
- We need all answered to be as real as possible. Letting people not answer questions means that those questions will be answered with a default response. This is a missed opportunity at classifying them better. 

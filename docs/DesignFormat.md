@@ -1,4 +1,52 @@
-> THIS IS **DEPRECATED**. The content of this doc is not accurate. August 20, 2018. 
+# Design Format
+
+## Home Page
+
+This page quickly explains how the app works. At the end of the home page, there will be a "Take the Quiz" section. See below:
+
+> MIT Course Match is a tool that uses Machine Learning to help students at MIT figure out their majors. 
+
+> ##### How it works
+> 1. Answer the questions in the quiz. 
+> 2. Send your responses to our backend so we can calculate which major fits you best.
+> 3. Explore your results.
+
+> [Take the Quiz](#) 
+
+> How it Works (<- links to about page)  
+> About This Project (<- links to about page)  
+> Contact Us (<- have a modal form)  
+> Copyright C 2018 MIT Course Match
+
+## Quiz Page
+
+This is where one takes the quiz. Two cases can happen:
+- Someone answers the quiz with a labelled response (they tell what major they are)
+- Someone answers the quiz without a labelled response
+
+### Unlabelled Response
+
+In this flow, first there will be a disclaimer. This must be short enough that people can read it completely. However, it needs to have enough information to clearly say "yo, don't just blindly follow what this suggests. it's ML after all, and we all know how bad it can be." Also talk about plans to have this in the future tell you why that major. 
+
+Then, the person gets to answer the quiz. They answer all the responses needed then can submit their answer. Finally, at the end, they will be prompted to enter a raffle if they know their major already to input it, with the idea in mind that their major will not be used to compute their answer but to make the model better. 
+
+### Labelled Response 
+
+In this case, the person will work the same as the unlabelled response except at the end, they choose to label their response. After choosing it, they are prompted to log in with MIT OpenID Connect. This part needs to make sure to emphasize that their information will be hashed (so impossible for us to match them with their answers). The purpose of this is to limit the answers to only one person. 
+
+Then, their name & email will be entered into a separate entry, independent again of their answer, such that they can be notified with the raffling results. 
+
+## About Page
+
+This page details why we're working on this project and how this project works. 
+
+## Courses Page
+
+After having done the studies, this page will allow one to determine how one course behave and maybe do comparisons between courses. 
+
+---
+
+> BELOW THIS IS **DEPRECATED**. The content below is not accurate and will be removed eventually. September 4th, 2018. 
 
 # Design Format
 
